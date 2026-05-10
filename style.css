@@ -929,6 +929,222 @@ a, button, [role="button"], input, select, textarea {
   opacity: 0.6;
 }
 
+/* ── LECTURES & BOARDING SECTIONS ── */
+.services {
+  padding: 100px 60px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.service-card {
+  background: var(--bg-card);
+  border: 3px solid var(--green-pale);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform var(--transition), box-shadow 0.3s ease, border-color 0.3s ease;
+  opacity: 0;
+  transform: translateY(30px);
+}
+.service-card.visible { opacity: 1; transform: translateY(0); }
+.service-card:nth-child(2) { transition-delay: 0.1s; }
+.service-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--green-bright);
+  box-shadow: 0 20px 56px rgba(46,125,50,0.22);
+}
+
+.service-photo {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+  background: var(--green-bg);
+}
+.service-photo-placeholder {
+  width: 100%;
+  height: 220px;
+  background: linear-gradient(135deg, var(--green-pale), var(--green-bg));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+}
+
+.service-body {
+  padding: 28px 32px 32px;
+}
+.service-badge {
+  display: inline-block;
+  font-family: var(--fb);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--green-pale);
+  color: var(--green-main);
+  padding: 5px 14px;
+  border-radius: 99px;
+  margin-bottom: 14px;
+}
+.service-title {
+  font-family: var(--ff);
+  font-size: 28px;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+.service-desc {
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+/* Dates grid */
+.service-dates {
+  margin-bottom: 24px;
+}
+.service-dates-title {
+  font-family: var(--fb);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-mid);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.service-dates-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.service-date-tag {
+  font-family: var(--fb);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 2px solid var(--green-bright);
+  background: var(--green-pale);
+  color: var(--green-dark);
+  white-space: nowrap;
+}
+.service-date-tag.booked {
+  border-color: var(--border);
+  background: rgba(0,0,0,0.04);
+  color: var(--text-muted);
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+.service-dates-empty {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Price row */
+.service-price {
+  font-family: var(--ff);
+  font-size: 20px;
+  color: var(--green-main);
+  margin-bottom: 20px;
+}
+
+/* CTA */
+.service-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--ff);
+  font-size: 17px;
+  background: #229ED9;
+  color: #fff;
+  text-decoration: none;
+  padding: 14px 30px;
+  border-radius: 99px;
+  border: 3px solid #1a7db0;
+  box-shadow: 0 5px 0 #1a7db0;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  min-height: 52px;
+  width: 100%;
+  justify-content: center;
+}
+.service-cta:hover {
+  transform: translateY(2px);
+  box-shadow: 0 3px 0 #1a7db0;
+}
+.service-cta:active {
+  transform: translateY(5px);
+  box-shadow: none;
+}
+
+/* Includes list */
+.service-includes {
+  margin-bottom: 20px;
+}
+.service-includes-title {
+  font-family: var(--fb);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-mid);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.service-includes ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.service-includes ul li {
+  font-size: 14px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.5;
+}
+.service-includes ul li::before {
+  content: '✓';
+  color: var(--green-bright);
+  font-weight: 900;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Multiple photos for boarding */
+.service-photos-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.service-photos-row .service-photo,
+.service-photos-row .service-photo-placeholder {
+  height: 180px;
+}
+
+@media (max-width: 900px) {
+  .services { padding: 70px 24px; }
+  .services-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .service-body { padding: 20px 20px 24px; }
+  .service-title { font-size: 22px; }
+}
+
+/* Secret lizard click counter */
+.nav-emoji { cursor: pointer; user-select: none; }
+
 /* ── FOOTER ── */
 .footer {
   background: var(--bg-dark);

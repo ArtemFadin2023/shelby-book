@@ -334,8 +334,8 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
 
       <div class="sidebar-sep"></div>
       <div class="sidebar-label">🆕 Услуги</div>
-      <div class="adm-nav-item" onclick="showPanel('lectures',this)"><span class="adm-nav-icon">📚</span> Лекции</div>
-      <div class="adm-nav-item" onclick="showPanel('boarding',this)"><span class="adm-nav-icon">🏡</span> Передержка</div>
+      <div class="adm-nav-item" onclick="showPanel('lectures',this)" style="border-left:3px solid #64B5F6;margin-left:-2px;padding-left:10px;"><span class="adm-nav-icon">📚</span> Лекции</div>
+      <div class="adm-nav-item" onclick="showPanel('boarding',this)" style="border-left:3px solid var(--yellow);margin-left:-2px;padding-left:10px;"><span class="adm-nav-icon">🏡</span> Передержка</div>
 
       <div class="sidebar-sep"></div>
       <div class="sidebar-label">Дизайн</div>
@@ -370,6 +370,10 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
             <button class="btn btn-yellow" onclick="showPanel('boarding',document.querySelectorAll('.adm-nav-item')[14])">🏡 Передержка</button>
             <button class="btn btn-ghost" onclick="showPanel('files',document.querySelectorAll('.adm-nav-item')[18])">📁 Файлы</button>
           </div>
+        </div>
+        <div class="adm-card">
+          <h3>🦎 Секретный доступ</h3>
+          <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.7;">На сайте нажми <strong style="color:#81C784">5 раз</strong> на 🦎 в верхнем левом углу — откроется эта панель администратора. Никаких видимых кнопок для обычных посетителей!</p>
         </div>
         <div class="adm-card">
           <h3>🆕 Что нового в v3</h3>

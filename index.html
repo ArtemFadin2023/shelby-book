@@ -292,7 +292,7 @@
 <nav class="nav" id="nav">
   <a href="#" class="nav-logo">
     <span class="logo-shelby">shelby</span><span class="logo-book">-book</span>
-    <span class="nav-emoji">🦎</span>
+    <span class="nav-emoji" id="secretLizard" onclick="secretLizardClick()" title="">🦎</span>
   </a>
   <ul class="nav-links">
     <li><a href="#about">О виде</a></li>
@@ -300,6 +300,7 @@
     <li><a href="#care">Уход</a></li>
     <li><a href="#gallery">Галерея</a></li>
     <li><a href="#facts">Факты</a></li>
+    <li><a href="#services">Услуги</a></li>
     <li><a href="#ifiles">Файлы</a></li>
   </ul>
   <div class="nav-actions">
@@ -319,6 +320,7 @@
   <a href="#care" onclick="toggleMobileMenu()">🏠 Уход</a>
   <a href="#gallery" onclick="toggleMobileMenu()">🎨 Галерея</a>
   <a href="#facts" onclick="toggleMobileMenu()">⚡ Факты</a>
+  <a href="#services" onclick="toggleMobileMenu()">🌟 Услуги</a>
   <a href="#ifiles" onclick="toggleMobileMenu()">📁 Файлы</a>
   <a href="https://t.me/justshelby" target="_blank" id="mobileNavTg">✈️ ТГ Канал</a>
 </div>
@@ -705,6 +707,15 @@
   <button class="add-card-btn" onclick="addFactCard()">➕ Добавить факт</button>
 </section>
 
+<!-- ═══ SERVICES: LECTURES + BOARDING ═══ -->
+<section class="services" id="services" data-section-label="УСЛУГИ">
+  <div class="section-label">🌟 Услуги</div>
+  <h2 class="section-title">Лекции и<br/><em data-editable contenteditable="false" data-key="svc-em">передержка!</em></h2>
+  <div class="services-grid" id="servicesGrid">
+    <!-- rendered by JS -->
+  </div>
+</section>
+
 <!-- ═══ INTERESTING FILES ═══ -->
 <section class="ifiles" id="ifiles" data-section-label="ФАЙЛЫ">
   <div class="ifiles-content">
@@ -734,7 +745,7 @@
   <div class="footer-links">
     <a href="#about">О виде</a><a href="#habitat">Среда обитания</a>
     <a href="#care">Уход</a><a href="#gallery">Галерея</a>
-    <a href="#facts">Факты</a><a href="#ifiles">Файлы</a>
+    <a href="#facts">Факты</a><a href="#services">Услуги</a><a href="#ifiles">Файлы</a>
     <a href="https://t.me/justshelby" target="_blank">✈️ ТГ Канал</a>
   </div>
   <div class="footer-bottom">
@@ -833,12 +844,185 @@ window.addEventListener('DOMContentLoaded', () => {
   buildFontList();
   renderPublicFiles();
   loadCustomFonts();
+  renderServices();
 
   const params = new URLSearchParams(window.location.search);
   if (params.get('edit') === '1' && localStorage.getItem('sb_admin_session') === '1') {
     enterEditMode();
   }
 });
+
+/* ═══ SECRET LIZARD ═══ */
+let _lizardClicks = 0, _lizardTimer = null;
+function secretLizardClick() {
+  _lizardClicks++;
+  clearTimeout(_lizardTimer);
+  const lizard = document.getElementById('secretLizard');
+  lizard.style.transform = 'scale(1.4) rotate(-20deg)';
+  setTimeout(() => lizard.style.transform = '', 220);
+  if (_lizardClicks >= 5) {
+    _lizardClicks = 0;
+    lizard.style.transform = 'scale(2) rotate(360deg)';
+    lizard.style.transition = 'transform 0.5s cubic-bezier(.34,1.56,.64,1)';
+    setTimeout(() => {
+      lizard.style.transform = '';
+      lizard.style.transition = '';
+      window.location.href = 'admin-shelby-x7k2.html';
+    }, 500);
+    return;
+  }
+  _lizardTimer = setTimeout(() => { _lizardClicks = 0; }, 1500);
+}
+
+/* ═══ SERVICES SECTION ═══ */
+function formatServiceDate(dateStr) {
+  try {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('ru-RU', {day:'numeric', month:'short'});
+  } catch(e) { return dateStr; }
+}
+
+function buildServiceCTA(contact) {
+  if (!contact) contact = '@justshelby';
+  const href = contact.startsWith('http') ? contact :
+    'https://t.me/' + contact.replace('@','');
+  return href;
+}
+
+function renderServices() {
+  const grid = document.getElementById('servicesGrid');
+  if (!grid) return;
+
+  // Lectures
+  let lecData = null;
+  try { lecData = JSON.parse(localStorage.getItem('sb_lectures') || 'null'); } catch(e) {}
+  const lecTitle = lecData?.title || 'Лекции об агамах 🦎';
+  const lecDesc = lecData?.desc || 'Приходи на наши живые встречи и узнай всё о бородатых агамах! Отвечаем на любые вопросы.';
+  const lecItems = lecData?.items || [];
+  const lecContact = (function(){
+    try { return JSON.parse(localStorage.getItem('sb_tg')||'{}').buy || '@justshelby'; } catch(e){ return '@justshelby'; }
+  })();
+
+  // Boarding
+  let boardData = null;
+  try { boardData = JSON.parse(localStorage.getItem('sb_boarding') || 'null'); } catch(e) {}
+  const boardTitle = boardData?.title || 'Передержка 🏡';
+  const boardDesc = boardData?.desc || 'Уедешь в отпуск? Мы с любовью присмотрим за твоим питомцем! Опытный уход в домашних условиях.';
+  const boardDates = boardData?.dates || [];
+  const boardPrice = boardData?.price || '';
+  const boardContact = boardData?.contact || lecContact;
+  const boardIncludes = boardData?.includes || [];
+
+  // Board photos
+  let bPhoto1 = '', bPhoto2 = '';
+  try { bPhoto1 = localStorage.getItem('sb_board_photo1') || ''; } catch(e) {}
+  try { bPhoto2 = localStorage.getItem('sb_board_photo2') || ''; } catch(e) {}
+
+  /* ── LECTURES CARD ── */
+  let lecHtml = '';
+  // If multiple lectures — show each; else show section as one card
+  if (lecItems.length > 0) {
+    lecItems.forEach(lec => {
+      const datesHtml = (lec.dates||[]).slice(0,8).map(d =>
+        `<span class="service-date-tag ${d.booked?'booked':''}">${formatServiceDate(d.date)}</span>`
+      ).join('') || '<span class="service-dates-empty">Уточняй в ТГ</span>';
+
+      const photoHtml = lec.photo
+        ? `<img class="service-photo" src="${lec.photo}" alt="${lec.title}"/>`
+        : `<div class="service-photo-placeholder">📚</div>`;
+
+      lecHtml += `
+      <div class="service-card">
+        ${photoHtml}
+        <div class="service-body">
+          <div class="service-badge">📚 Лекция</div>
+          <div class="service-title">${lec.title}</div>
+          <div class="service-desc">${lec.desc||lecDesc}</div>
+          <div class="service-dates">
+            <div class="service-dates-title">📅 Свободные даты:</div>
+            <div class="service-dates-list">${datesHtml}</div>
+          </div>
+          <a href="${buildServiceCTA(lecContact)}" target="_blank" class="service-cta">
+            ✈️ Записаться в ТГ
+          </a>
+        </div>
+      </div>`;
+    });
+  } else {
+    lecHtml = `
+    <div class="service-card">
+      <div class="service-photo-placeholder">📚</div>
+      <div class="service-body">
+        <div class="service-badge">📚 Лекции</div>
+        <div class="service-title">${lecTitle}</div>
+        <div class="service-desc">${lecDesc}</div>
+        <div class="service-dates">
+          <div class="service-dates-title">📅 Свободные даты:</div>
+          <div class="service-dates-list"><span class="service-dates-empty">Уточняй в ТГ</span></div>
+        </div>
+        <a href="${buildServiceCTA(lecContact)}" target="_blank" class="service-cta">
+          ✈️ Записаться в ТГ
+        </a>
+      </div>
+    </div>`;
+  }
+
+  /* ── BOARDING CARD ── */
+  const datesHtml = boardDates.length > 0
+    ? boardDates.slice(0,10).map(d =>
+        `<span class="service-date-tag ${d.booked?'booked':''}">${formatServiceDate(d.date)}</span>`
+      ).join('')
+    : '<span class="service-dates-empty">Уточняй в ТГ</span>';
+
+  let includesHtml = '';
+  if (boardIncludes.length) {
+    includesHtml = `<div class="service-includes">
+      <div class="service-includes-title">✅ Что включено:</div>
+      <ul>${boardIncludes.map(inc=>`<li>${inc.text}</li>`).join('')}</ul>
+    </div>`;
+  }
+
+  let boardPhotoHtml = '';
+  if (bPhoto1 && bPhoto2) {
+    boardPhotoHtml = `<div class="service-photos-row">
+      <img class="service-photo" src="${bPhoto1}" alt="Передержка"/>
+      <img class="service-photo" src="${bPhoto2}" alt="Передержка"/>
+    </div>`;
+  } else if (bPhoto1) {
+    boardPhotoHtml = `<img class="service-photo" src="${bPhoto1}" alt="Передержка"/>`;
+  } else if (bPhoto2) {
+    boardPhotoHtml = `<img class="service-photo" src="${bPhoto2}" alt="Передержка"/>`;
+  } else {
+    boardPhotoHtml = `<div class="service-photo-placeholder">🏡</div>`;
+  }
+
+  const boardCardHtml = `
+  <div class="service-card">
+    ${boardPhotoHtml}
+    <div class="service-body">
+      <div class="service-badge">🏡 Передержка</div>
+      <div class="service-title">${boardTitle}</div>
+      <div class="service-desc">${boardDesc}</div>
+      ${includesHtml}
+      <div class="service-dates">
+        <div class="service-dates-title">📅 Свободные даты:</div>
+        <div class="service-dates-list">${datesHtml}</div>
+      </div>
+      ${boardPrice ? `<div class="service-price">💰 ${boardPrice}</div>` : ''}
+      <a href="${buildServiceCTA(boardContact)}" target="_blank" class="service-cta">
+        ✈️ Записаться в ТГ
+      </a>
+    </div>
+  </div>`;
+
+  grid.innerHTML = lecHtml + boardCardHtml;
+
+  // Animate in
+  grid.querySelectorAll('.service-card').forEach((card, i) => {
+    card.style.transitionDelay = (i * 0.1) + 's';
+    requestAnimationFrame(() => setTimeout(() => card.classList.add('visible'), i * 80));
+  });
+}
 
 /* ═══ MOBILE MENU ═══ */
 function toggleMobileMenu() {
@@ -1431,7 +1615,7 @@ window.addEventListener('scroll', () => {
 const observer = new IntersectionObserver(entries => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, {threshold:.1});
-document.querySelectorAll('.about-card,.habitat-item,.care-step,.morph-card,.fact-card,.taxonomy-block,.ifile-card').forEach(el => observer.observe(el));
+document.querySelectorAll('.about-card,.habitat-item,.care-step,.morph-card,.fact-card,.taxonomy-block,.ifile-card,.service-card').forEach(el => observer.observe(el));
 
 /* ═══ COPY PROTECTION ═══ */
 document.addEventListener('contextmenu', e => { if(!isEditMode) e.preventDefault(); });
