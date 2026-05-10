@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#F0FAF1" />
+  <title>Shelby-book — Мир Бородатых Агам</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Bubblegum+Sans&display=swap" rel="stylesheet" />
+  <script>
+    (function(){
+      var fontCss = localStorage.getItem('sb_custom_css') || '';
+      var colorCss = localStorage.getItem('sb_colors_css') || '';
+      if (fontCss || colorCss) {
+        var style = document.createElement('style');
+        style.id = 'sb-admin-overrides';
+        style.textContent = fontCss + '\n' + colorCss;
+        document.head.appendChild(style);
+      }
+    })();
+  </script>
+  <style>
+    /* ── Copy protection ── */
+    body:not(.edit-mode) * { -webkit-user-select:none; user-select:none; }
+    .no-copy-overlay { position:fixed; inset:0; z-index:99999; pointer-events:none; }
+
+    /* ════════════════════════════════════
+       ADMIN EDIT TOOLBAR
+    ════════════════════════════════════ */
+    #adminEditBar {
+      display:none; position:fixed; top:0; left:0; right:0; z-index:99000;
+      background:linear-gradient(90deg,#0d1f0e 0%,#162618 100%);
+      border-bottom:3px solid #4CAF50;
+      padding:0 16px; height:54px;
+      align-items:center; gap:8px;
+      box-shadow:0 4px 32px rgba(0,0,0,0.6);
+      flex-wrap:nowrap; overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+    #adminEditBar.active { display:flex; }
+
+    .aeb-logo { font-family:'Fredoka One',cursive; font-size:15px; color:#e0ffe2; white-space:nowrap; flex-shrink:0; }
+    .aeb-logo span { color:#FDD835; }
+    .aeb-badge { background:#4CAF50; color:#fff; font-size:9px; font-weight:800; padding:2px 8px; border-radius:99px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; flex-shrink:0; }
+    .aeb-sep { width:1px; height:28px; background:rgba(76,175,80,.3); margin:0 4px; flex-shrink:0; }
+
+    .aeb-btn {
+      display:inline-flex; align-items:center; gap:5px;
+      font-family:'Nunito',sans-serif; font-size:12px; font-weight:800;
+      padding:7px 13px; border-radius:8px; border:2px solid;
+      cursor:pointer; transition:all .18s; white-space:nowrap; flex-shrink:0;
+      -webkit-tap-highlight-color:transparent; min-height:36px;
+    }
+    .aeb-btn.save { background:#2E7D32; border-color:#1B5E20; color:#fff; box-shadow:0 3px 0 #1B5E20; }
+    .aeb-btn.save:hover { transform:translateY(2px); box-shadow:0 1px 0 #1B5E20; background:#4CAF50; }
+    .aeb-btn.discard { background:transparent; border-color:rgba(229,57,53,.5); color:#E53935; }
+    .aeb-btn.discard:hover { background:#E53935; color:#fff; border-color:#E53935; }
+    .aeb-btn.back { background:transparent; border-color:rgba(255,255,255,.2); color:rgba(255,255,255,.55); }
+    .aeb-btn.back:hover { border-color:rgba(255,255,255,.5); color:#fff; }
+    .aeb-btn.fonts-btn { background:rgba(253,216,53,.15); border-color:rgba(253,216,53,.5); color:#FDD835; }
+    .aeb-btn.fonts-btn:hover { background:#FDD835; color:#0d1f0e; }
+    .aeb-hint { margin-left:auto; font-family:'Nunito',sans-serif; font-size:11px; font-weight:700; color:rgba(255,255,255,.35); display:flex; align-items:center; gap:6px; white-space:nowrap; flex-shrink:0; }
+    .aeb-dot { width:7px; height:7px; border-radius:50%; background:#4CAF50; animation:aebPulse 2s ease-in-out infinite; }
+    @keyframes aebPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.65)} }
+
+    body.edit-mode .nav { top:54px !important; }
+    body.edit-mode .hero { padding-top:154px !important; }
+
+    /* ════════════════════════════════════
+       INLINE EDITING
+    ════════════════════════════════════ */
+    body.edit-mode [data-editable] {
+      outline:2px dashed transparent; border-radius:3px;
+      transition:outline-color .15s, background .15s;
+      cursor:text !important; min-width:20px; display:inline-block;
+    }
+    body.edit-mode [data-editable]:hover { outline-color:rgba(76,175,80,.6); background:rgba(76,175,80,.06); }
+    body.edit-mode [data-editable]:focus { outline:2px solid #4CAF50; background:rgba(76,175,80,.1); outline-offset:2px; }
+
+    body.edit-mode section[data-section-label] { position:relative; }
+    body.edit-mode section[data-section-label]::after {
+      content:'✏️ ' attr(data-section-label);
+      position:absolute; top:10px; right:14px;
+      font-family:'Nunito',sans-serif; font-size:10px; font-weight:800;
+      letter-spacing:.06em; text-transform:uppercase; color:rgba(76,175,80,.6);
+      background:rgba(13,31,14,.75); padding:3px 10px; border-radius:99px;
+      pointer-events:none; z-index:5;
+    }
+
+    /* Hero image overlay */
+    .hero-img-overlay {
+      display:none; position:absolute; top:0; left:0; right:0; bottom:56px;
+      background:rgba(13,31,14,.72); border-radius:28px 28px 0 0;
+      align-items:center; justify-content:center; flex-direction:column;
+      gap:8px; z-index:10; backdrop-filter:blur(3px);
+      border:3px solid #4CAF50; border-bottom:none; pointer-events:none;
+    }
+    .hero-img-overlay-btn {
+      pointer-events:all; cursor:pointer;
+      display:flex; flex-direction:column; align-items:center; gap:8px;
+      padding:18px 28px; border-radius:16px;
+      background:rgba(0,0,0,.25); border:2px dashed rgba(76,175,80,.6);
+      transition:background .2s;
+    }
+    .hero-img-overlay-btn:hover { background:rgba(46,125,50,.5); }
+    .hero-img-overlay-icon { font-size:36px; }
+    .hero-img-overlay-text { font-family:'Fredoka One',cursive; color:#fff; font-size:17px; }
+    .hero-img-overlay-sub { font-family:'Nunito',sans-serif; color:rgba(255,255,255,.7); font-size:12px; font-weight:700; }
+    body.edit-mode .hero-card-float { position:relative; }
+    body.edit-mode .hero-img-overlay { display:flex; }
+    .float-badge { z-index:15; }
+
+    /* ── Morph photo overlay ── */
+    .morph-photo-overlay {
+      display:none; position:absolute; inset:0;
+      background:rgba(13,31,14,.6); border-radius:0;
+      align-items:center; justify-content:center; flex-direction:column; gap:6px;
+      cursor:pointer; z-index:25; transition:background .2s;
+    }
+    body.edit-mode .morph-swatch:hover .morph-photo-overlay { background:rgba(13,31,14,.75); }
+    body.edit-mode .morph-photo-overlay { display:flex; }
+    .morph-photo-overlay span { font-size:11px; font-weight:800; color:#fff; font-family:'Nunito',sans-serif; }
+
+    /* ── Habitat photo overlay ── */
+    .habitat-photo-overlay {
+      display:none; position:absolute; bottom:8px; right:8px; z-index:40;
+    }
+    .habitat-photo-btn {
+      background:rgba(0,0,0,.5); border:2px solid rgba(255,255,255,.4);
+      color:#fff; border-radius:8px; padding:5px 10px;
+      font-size:11px; font-weight:800; font-family:'Nunito',sans-serif;
+      cursor:pointer; transition:background .2s; white-space:nowrap;
+    }
+    .habitat-photo-btn:hover { background:rgba(46,125,50,.7); }
+    body.edit-mode .habitat-photo-overlay { display:block; }
+
+    /* Add morph grid btn */
+    .add-morph-btn {
+      display:none;
+      background:rgba(76,175,80,.08); border:2px dashed rgba(76,175,80,.4);
+      color:rgba(76,175,80,.8); font-family:'Nunito',sans-serif;
+      font-size:13px; font-weight:800; padding:14px;
+      border-radius:16px; cursor:pointer; transition:all .2s;
+      align-items:center; justify-content:center; gap:8px;
+      min-height:220px; flex-direction:column;
+    }
+    body.edit-mode .add-morph-btn { display:flex; }
+    .add-morph-btn:hover { background:rgba(76,175,80,.18); border-color:#4CAF50; color:#4CAF50; }
+
+    /* Relative positioning for cards etc */
+    body.edit-mode .about-card,
+    body.edit-mode .habitat-item,
+    body.edit-mode .care-step,
+    body.edit-mode .fact-card,
+    body.edit-mode .ifile-card { position:relative !important; }
+
+    /* ════════════════════════════════════
+       FONT PICKER PANEL
+    ════════════════════════════════════ */
+    #fontPickerPanel {
+      display:none; position:fixed; top:54px; right:0;
+      width:340px; height:calc(100vh - 54px); height:calc(100dvh - 54px);
+      background:#0d1f0e; border-left:2px solid rgba(76,175,80,.3);
+      z-index:98000; overflow-y:auto; padding:0;
+      box-shadow:-8px 0 32px rgba(0,0,0,.5);
+      font-family:'Nunito',sans-serif;
+      -webkit-overflow-scrolling:touch;
+    }
+    #fontPickerPanel.open { display:block; }
+
+    .fp-header { background:linear-gradient(135deg,#162618,#0d1f0e); padding:16px 20px; border-bottom:2px solid rgba(76,175,80,.2); position:sticky; top:0; z-index:10; }
+    .fp-title { font-family:'Fredoka One',cursive; font-size:18px; color:#81C784; margin-bottom:4px; }
+    .fp-sub { font-size:11px; color:rgba(255,255,255,.4); font-weight:700; }
+    .fp-search { width:100%; padding:10px 14px; margin-top:10px; background:rgba(255,255,255,.06); border:2px solid rgba(76,175,80,.3); border-radius:8px; color:#e0ffe2; font-size:13px; font-weight:700; outline:none; transition:border-color .2s; }
+    .fp-search:focus { border-color:#4CAF50; }
+
+    /* Custom font upload in panel */
+    .fp-custom-section { padding:12px 20px; border-bottom:2px solid rgba(76,175,80,.1); }
+    .fp-custom-title { font-size:11px; font-weight:800; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; }
+    .fp-custom-upload {
+      display:flex; align-items:center; gap:8px; padding:10px 12px;
+      background:rgba(76,175,80,.08); border:2px dashed rgba(76,175,80,.35);
+      border-radius:10px; cursor:pointer; transition:all .2s;
+    }
+    .fp-custom-upload:hover { background:rgba(76,175,80,.16); border-color:#4CAF50; }
+    .fp-custom-upload span { font-size:12px; font-weight:800; color:rgba(76,175,80,.9); }
+
+    .fp-section-label { padding:10px 20px 6px; font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.3); }
+    .fp-font-item { padding:12px 20px; cursor:pointer; border-bottom:1px solid rgba(76,175,80,.08); transition:background .15s; display:flex; flex-direction:column; gap:4px; }
+    .fp-font-item:hover { background:rgba(76,175,80,.1); }
+    .fp-font-item.selected { background:rgba(76,175,80,.2); border-left:3px solid #4CAF50; }
+    .fp-font-preview { font-size:22px; color:#e0ffe2; line-height:1.2; }
+    .fp-font-name { font-size:10px; font-weight:800; color:rgba(255,255,255,.35); letter-spacing:.06em; text-transform:uppercase; }
+
+    .fp-apply-bar { position:sticky; bottom:0; background:#0d1f0e; border-top:2px solid rgba(76,175,80,.2); padding:14px 20px; display:flex; flex-direction:column; gap:8px; }
+    .fp-selected-info { font-size:12px; color:#81C784; font-weight:700; }
+    .fp-apply-btn { width:100%; padding:11px; background:#2E7D32; border:2px solid #1B5E20; color:#fff; font-family:'Fredoka One',cursive; font-size:15px; border-radius:10px; cursor:pointer; box-shadow:0 3px 0 #1B5E20; transition:all .2s; }
+    .fp-apply-btn:hover { transform:translateY(2px); box-shadow:0 1px 0 #1B5E20; }
+    .fp-apply-type { display:flex; gap:6px; margin-bottom:4px; }
+    .fp-type-btn { flex:1; padding:6px; border:2px solid rgba(76,175,80,.3); background:transparent; color:rgba(255,255,255,.5); font-family:'Nunito',sans-serif; font-size:11px; font-weight:800; border-radius:7px; cursor:pointer; transition:all .2s; }
+    .fp-type-btn.active { background:rgba(76,175,80,.2); border-color:#4CAF50; color:#4CAF50; }
+
+    /* Save toast */
+    #editSaveToast {
+      position:fixed; bottom:calc(24px + env(safe-area-inset-bottom,0px)); left:50%;
+      transform:translateX(-50%) translateY(90px);
+      background:#2E7D32; border:2px solid #4CAF50; color:#fff;
+      font-family:'Fredoka One',cursive; font-size:16px;
+      padding:13px 30px; border-radius:14px;
+      box-shadow:0 8px 32px rgba(0,0,0,.35);
+      z-index:999999; transition:transform .42s cubic-bezier(.34,1.56,.64,1);
+      pointer-events:none; white-space:nowrap;
+    }
+    #editSaveToast.show { transform:translateX(-50%) translateY(0); }
+
+    /* Dynamically added cards keep same style */
+    .about-card.animated, .habitat-item.animated, .care-step.animated,
+    .morph-card.animated, .fact-card.animated, .ifile-card.animated {
+      animation:cardIn .5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes cardIn { from{opacity:0;transform:scale(.9) translateY(20px)} to{opacity:1;transform:scale(1) translateY(0)} }
+
+    /* Responsive font panel */
+    @media (max-width:600px) {
+      #fontPickerPanel { width:100vw; }
+    }
+  </style>
+</head>
+<body>
+<div class="no-copy-overlay" id="noCopyOverlay"></div>
+<input type="file" id="heroImgReplace" accept="image/*" style="display:none" onchange="replaceHeroImage(this)"/>
+<input type="file" id="morphImgInput" accept="image/*" style="display:none" onchange="handleMorphPhotoUpload(this)"/>
+<input type="file" id="habitatImgInput" accept="image/*" style="display:none" onchange="handleHabitatPhotoUpload(this)"/>
+<input type="file" id="customFontInput" accept=".ttf,.otf,.woff,.woff2" style="display:none" onchange="handleCustomFontUpload(this)"/>
+
+<!-- ═══ ADMIN EDIT TOOLBAR ═══ -->
+<div id="adminEditBar">
+  <div class="aeb-logo">🦎 shelby<span>-book</span></div>
+  <div class="aeb-badge">Режим правки</div>
+  <div class="aeb-sep"></div>
+  <button class="aeb-btn save" onclick="saveAllEdits()">💾 Сохранить</button>
+  <button class="aeb-btn discard" onclick="discardEdits()">↺ Отменить</button>
+  <div class="aeb-sep"></div>
+  <button class="aeb-btn fonts-btn" onclick="toggleFontPanel()">✍️ Шрифты</button>
+  <button class="aeb-btn back" onclick="goBackToAdmin()">← Панель</button>
+  <div class="aeb-hint"><div class="aeb-dot"></div>Кликай на текст — редактируй · «+» — добавляй карточки</div>
+</div>
+
+<!-- ═══ FONT PICKER PANEL ═══ -->
+<div id="fontPickerPanel">
+  <div class="fp-header">
+    <div class="fp-title">✍️ Шрифты сайта</div>
+    <div class="fp-sub">Превью: «I love Nastysha» · 100+ шрифтов</div>
+    <input class="fp-search" type="text" placeholder="🔍 Поиск шрифта..." oninput="filterFontPanel(this.value)"/>
+  </div>
+  <div class="fp-custom-section">
+    <div class="fp-custom-title">📂 Свой шрифт</div>
+    <div class="fp-custom-upload" onclick="document.getElementById('customFontInput').click()">
+      <span>📎</span>
+      <span>Загрузить TTF / OTF / WOFF</span>
+    </div>
+    <div id="customFontsLoaded" style="margin-top:8px;display:flex;flex-direction:column;gap:4px;"></div>
+  </div>
+  <div class="fp-apply-bar">
+    <div class="fp-selected-info" id="fpSelectedInfo">Не выбран</div>
+    <div class="fp-apply-type">
+      <button class="fp-type-btn active" id="fpTypeTitle" onclick="setFontTarget('title',this)">Заголовки</button>
+      <button class="fp-type-btn" id="fpTypeBody" onclick="setFontTarget('body',this)">Текст</button>
+      <button class="fp-type-btn" id="fpTypeAccent" onclick="setFontTarget('accent',this)">Акцент</button>
+    </div>
+    <button class="fp-apply-btn" onclick="applyFontChoice()">💾 Применить на весь сайт</button>
+  </div>
+  <div id="fpFontList"></div>
+</div>
+
+<!-- ═══ PRELOADER ═══ -->
+<div class="preloader" id="preloader">
+  <div class="preloader-leaves">
+    <span class="pl1">🌿</span><span class="pl2">🍃</span><span class="pl3">🌱</span><span class="pl4">🍀</span>
+  </div>
+  <div class="preloader-logo">
+    <span class="logo-shelby">shelby</span><span class="logo-book">-book</span>
+  </div>
+  <div class="preloader-lizard">🦎</div>
+  <p class="preloader-sub">Загружаем мир агам...</p>
+  <div class="preloader-bar"><span></span></div>
+</div>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav" id="nav">
+  <a href="#" class="nav-logo">
+    <span class="logo-shelby">shelby</span><span class="logo-book">-book</span>
+    <span class="nav-emoji">🦎</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">О виде</a></li>
+    <li><a href="#habitat">Среда</a></li>
+    <li><a href="#care">Уход</a></li>
+    <li><a href="#gallery">Галерея</a></li>
+    <li><a href="#facts">Факты</a></li>
+    <li><a href="#ifiles">Файлы</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="nav-btn nav-btn-coloring" onclick="openColoringModal()">🎨 Раскраска</button>
+    <a id="navTgLink" href="https://t.me/justshelby" target="_blank" class="nav-btn nav-btn-tg">✈️ ТГ Канал</a>
+  </div>
+  <button class="nav-hamburger" id="navHamburger" onclick="toggleMobileMenu()" aria-label="Меню">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Mobile menu -->
+<div class="nav-mobile-menu" id="navMobileMenu">
+  <button class="nav-mobile-close" onclick="toggleMobileMenu()">✕</button>
+  <a href="#about" onclick="toggleMobileMenu()">🔬 О виде</a>
+  <a href="#habitat" onclick="toggleMobileMenu()">🌍 Среда</a>
+  <a href="#care" onclick="toggleMobileMenu()">🏠 Уход</a>
+  <a href="#gallery" onclick="toggleMobileMenu()">🎨 Галерея</a>
+  <a href="#facts" onclick="toggleMobileMenu()">⚡ Факты</a>
+  <a href="#ifiles" onclick="toggleMobileMenu()">📁 Файлы</a>
+  <a href="https://t.me/justshelby" target="_blank" id="mobileNavTg">✈️ ТГ Канал</a>
+</div>
+
+<!-- ═══ COLORING MODAL ═══ -->
+<div class="modal-overlay" id="coloringModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🎨 Раскраски с агамой!</h2>
+      <p>Выбери понравившуюся раскраску и купи у нас</p>
+      <button class="modal-close" onclick="closeColoringModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="coloring-preview-grid" id="coloringGrid">
+        <div class="coloring-thumb" onclick="selectColoring(this)">
+          <svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg"><ellipse cx="110" cy="72" rx="65" ry="32" fill="none" stroke="#333" stroke-width="2.5"/><ellipse cx="65" cy="62" rx="30" ry="22" fill="none" stroke="#333" stroke-width="2.5"/><path d="M170 72 Q195 60 215 48" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="48" cy="56" r="6" fill="none" stroke="#333" stroke-width="2"/><circle cx="50" cy="55" r="2" fill="#333"/></svg>
+          <div class="coloring-thumb-label">🦎 Агама сидит</div>
+        </div>
+        <div class="coloring-thumb" onclick="selectColoring(this)">
+          <svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg"><ellipse cx="120" cy="65" rx="70" ry="28" fill="none" stroke="#333" stroke-width="2.5"/><ellipse cx="62" cy="55" rx="28" ry="20" fill="none" stroke="#333" stroke-width="2.5"/><path d="M185 62 Q202 50 215 35" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="44" cy="48" r="6" fill="none" stroke="#333" stroke-width="2"/><circle cx="46" cy="47" r="2" fill="#333"/></svg>
+          <div class="coloring-thumb-label">🏜️ Агама в пустыне</div>
+        </div>
+        <div class="coloring-thumb" onclick="selectColoring(this)">
+          <svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg"><ellipse cx="80" cy="70" rx="52" ry="38" fill="none" stroke="#333" stroke-width="2"/><circle cx="38" cy="56" r="7" fill="none" stroke="#333" stroke-width="2"/><circle cx="40" cy="54" r="2.5" fill="#333"/><path d="M48 88 Q60 105 80 108 Q100 110 115 100" fill="none" stroke="#333" stroke-width="2"/></svg>
+          <div class="coloring-thumb-label">😊 Портрет агамы</div>
+        </div>
+        <div class="coloring-thumb" onclick="selectColoring(this)">
+          <svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg"><path d="M10 100 Q60 90 110 88 Q160 86 210 95" stroke="#555" stroke-width="8" fill="none" stroke-linecap="round"/><ellipse cx="110" cy="68" rx="60" ry="26" fill="none" stroke="#333" stroke-width="2.5"/><ellipse cx="60" cy="58" rx="26" ry="18" fill="none" stroke="#333" stroke-width="2.5"/><circle cx="44" cy="51" r="6" fill="none" stroke="#333" stroke-width="2"/><circle cx="46" cy="49" r="2" fill="#333"/></svg>
+          <div class="coloring-thumb-label">🌿 Агама на ветке</div>
+        </div>
+      </div>
+      <div class="modal-buy-section">
+        <h3>🛒 Хочешь купить раскраску?</h3>
+        <p>Напиши нам в Telegram — отправим файл сразу после оплаты!</p>
+        <a id="modalTgBuyLink" href="https://t.me/just_agamass" target="_blank" class="btn-buy-tg">
+          <span>✈️</span> <span id="modalTgBuyText">@just_agamass</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FAB ═══ -->
+<div class="fab-group" id="fabGroup">
+  <a id="fabTgLink" href="https://t.me/justshelby" target="_blank" class="fab-btn fab-tg"><span>✈️</span> ТГ Канал</a>
+  <button class="fab-btn fab-coloring" onclick="openColoringModal()"><span>🎨</span> Раскраска</button>
+</div>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="hero" data-section-label="HERO">
+  <div class="hero-bubbles">
+    <div class="bubble b1"></div><div class="bubble b2"></div>
+    <div class="bubble b3"></div><div class="bubble b4"></div><div class="bubble b5"></div>
+  </div>
+  <div class="hero-grid">
+    <div class="hero-content">
+      <div class="hero-badge" data-editable contenteditable="false" data-key="hero-badge">🌿 Погружайся в мир рептилий!</div>
+      <h1 class="hero-title">
+        <span class="line" data-editable contenteditable="false" data-key="hero-t1">Бородатая</span>
+        <span class="line green" data-editable contenteditable="false" data-key="hero-t2">Агама!</span>
+      </h1>
+      <p class="hero-desc" data-editable contenteditable="false" data-key="hero-desc">Ящерица родом из австралийских пустынь — умная, дружелюбная и невероятно классная! Узнай всё о самом крутом питомце! 🎉</p>
+      <a href="#about" class="hero-cta" data-editable contenteditable="false" data-key="hero-cta">Узнать больше →</a>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card-float" id="heroCardFloat">
+        <div class="hero-img-overlay">
+          <div class="hero-img-overlay-btn" onclick="document.getElementById('heroImgReplace').click()">
+            <div class="hero-img-overlay-icon">📷</div>
+            <div class="hero-img-overlay-text">Заменить фото</div>
+            <div class="hero-img-overlay-sub">JPG, PNG, WEBP до 5MB</div>
+          </div>
+        </div>
+        <div id="heroDefaultSvg">
+          <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg" class="lizard-svg">
+            <ellipse cx="250" cy="220" rx="120" ry="55" fill="#4CAF50" opacity=".22"/>
+            <ellipse cx="148" cy="200" rx="55" ry="42" fill="#4CAF50" opacity=".28"/>
+            <ellipse cx="148" cy="233" rx="44" ry="24" fill="#2E7D32" opacity=".38"/>
+            <path d="M370 220 Q430 200 470 175 Q490 165 495 158" stroke="#4CAF50" stroke-width="18" fill="none" stroke-linecap="round" opacity=".22"/>
+            <path d="M190 265 Q180 300 165 322" stroke="#4CAF50" stroke-width="9" fill="none" stroke-linecap="round" opacity=".28"/>
+            <path d="M220 268 Q215 307 205 330" stroke="#4CAF50" stroke-width="9" fill="none" stroke-linecap="round" opacity=".28"/>
+            <path d="M300 262 Q305 298 318 322" stroke="#4CAF50" stroke-width="9" fill="none" stroke-linecap="round" opacity=".28"/>
+            <path d="M332 258 Q342 294 358 317" stroke="#4CAF50" stroke-width="9" fill="none" stroke-linecap="round" opacity=".28"/>
+            <path d="M155 168 L160 146 M180 163 L187 140 M205 160 L214 136 M230 158 L240 134 M255 158 L266 134 M280 160 L292 138 M306 163 L318 142 M331 168 L344 148" stroke="#66BB6A" stroke-width="3" opacity=".5" stroke-linecap="round"/>
+            <circle cx="126" cy="192" r="10" fill="#4CAF50" opacity=".8"/>
+            <circle cx="126" cy="192" r="5" fill="#1B5E20" opacity=".9"/>
+            <circle cx="124" cy="190" r="2" fill="#fff" opacity=".9"/>
+          </svg>
+        </div>
+        <img id="heroCustomImg" src="" alt="Главное фото" style="display:none;width:100%;border-radius:16px;object-fit:cover;max-height:360px;"/>
+        <div class="float-badge fb1" data-editable contenteditable="false" data-key="fb1">🌟 Умная!</div>
+        <div class="float-badge fb2" data-editable contenteditable="false" data-key="fb2">🏜️ Из Австралии</div>
+        <div class="float-badge fb3" data-editable contenteditable="false" data-key="fb3">❤️ Дружелюбная</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll-hint">
+    <span>Скролли вниз</span>
+    <div class="scroll-bounce">↓</div>
+  </div>
+</section>
+
+<!-- ═══ ABOUT ═══ -->
+<section class="about" id="about" data-section-label="О ВИДЕ">
+  <div class="section-label">🔬 О виде</div>
+  <div class="about-layout">
+    <div class="about-left">
+      <h2 class="section-title">Кто такая<br/><em data-editable contenteditable="false" data-key="about-em">агама?</em></h2>
+      <div id="aboutCardsContainer">
+        <div class="about-card" id="about-card-1">
+          <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+          <div class="card-icon" data-editable contenteditable="false" data-key="a1-icon">🦎</div>
+          <h3 data-editable contenteditable="false" data-key="a1-title">Pogona vitticeps</h3>
+          <p data-editable contenteditable="false" data-key="a1-text">Бородатая агама — ящерица семейства агамовых, эндемик Австралии. Своё название получила за горловой мешок, напоминающий бороду.</p>
+        </div>
+        <div class="about-card" id="about-card-2">
+          <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+          <div class="card-icon" data-editable contenteditable="false" data-key="a2-icon">📏</div>
+          <h3 data-editable contenteditable="false" data-key="a2-title">Размер</h3>
+          <p data-editable contenteditable="false" data-key="a2-text">Взрослые особи достигают 40–60 см в длину, включая хвост. Самцы крупнее самок и обладают более выраженной «бородой».</p>
+        </div>
+        <div class="about-card" id="about-card-3">
+          <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+          <div class="card-icon" data-editable contenteditable="false" data-key="a3-icon">⏳</div>
+          <h3 data-editable contenteditable="false" data-key="a3-title">Продолжительность жизни</h3>
+          <p data-editable contenteditable="false" data-key="a3-text">В природе — 5–8 лет. В неволе при правильном уходе агамы живут 10–15 лет и становятся настоящими любимцами!</p>
+        </div>
+      </div>
+      <button class="add-card-btn" onclick="addAboutCard()">➕ Добавить карточку «О виде»</button>
+    </div>
+    <div class="about-right">
+      <div class="taxonomy-block">
+        <div class="taxonomy-title">🔎 Систематика</div>
+        <table class="taxonomy-table">
+          <tr><td>Царство</td><td data-editable contenteditable="false" data-key="tx1">Животные</td></tr>
+          <tr><td>Класс</td><td data-editable contenteditable="false" data-key="tx2">Пресмыкающиеся</td></tr>
+          <tr><td>Отряд</td><td data-editable contenteditable="false" data-key="tx3">Чешуйчатые</td></tr>
+          <tr><td>Семейство</td><td data-editable contenteditable="false" data-key="tx4">Агамовые</td></tr>
+          <tr><td>Род</td><td data-editable contenteditable="false" data-key="tx5">Pogona</td></tr>
+          <tr><td>Вид</td><td><em data-editable contenteditable="false" data-key="tx6">P. vitticeps</em></td></tr>
+        </table>
+      </div>
+      <div class="quote-block">
+        <blockquote data-editable contenteditable="false" data-key="about-quote">"Агама — это не просто рептилия. Это ящерица, которая смотрит тебе в глаза и узнаёт тебя!" 🥰</blockquote>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HABITAT ═══ -->
+<section class="habitat" id="habitat" data-section-label="СРЕДА ОБИТАНИЯ">
+  <div class="section-label light">🌍 Среда обитания</div>
+  <div class="habitat-content">
+    <h2 class="section-title light">Родина —<br/><em data-editable contenteditable="false" data-key="hab-em">австралийская пустыня!</em></h2>
+    <div class="habitat-grid" id="habitatGrid">
+      <div class="habitat-item" data-habitat-id="h1">
+        <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+        <div class="habitat-photo-overlay"><button class="habitat-photo-btn" onclick="openHabitatPhoto(this.closest('.habitat-item'))">📷 Фото</button></div>
+        <div class="habitat-icon" data-editable contenteditable="false" data-key="h1-ico">🌡️</div>
+        <h3 data-editable contenteditable="false" data-key="h1-title">Температура</h3>
+        <p data-editable contenteditable="false" data-key="h1-text">Дикие агамы живут при дневных температурах 35–45°C. Они термофилы — солнце для них жизненно необходимо.</p>
+      </div>
+      <div class="habitat-item" data-habitat-id="h2">
+        <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+        <div class="habitat-photo-overlay"><button class="habitat-photo-btn" onclick="openHabitatPhoto(this.closest('.habitat-item'))">📷 Фото</button></div>
+        <div class="habitat-icon" data-editable contenteditable="false" data-key="h2-ico">☀️</div>
+        <h3 data-editable contenteditable="false" data-key="h2-title">Освещение</h3>
+        <p data-editable contenteditable="false" data-key="h2-text">Ультрафиолет — основа здоровья. В природе агамы проводят на солнце до 12 часов в день, синтезируя витамин D3.</p>
+      </div>
+      <div class="habitat-item" data-habitat-id="h3">
+        <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+        <div class="habitat-photo-overlay"><button class="habitat-photo-btn" onclick="openHabitatPhoto(this.closest('.habitat-item'))">📷 Фото</button></div>
+        <div class="habitat-icon" data-editable contenteditable="false" data-key="h3-ico">🏜️</div>
+        <h3 data-editable contenteditable="false" data-key="h3-title">Ландшафт</h3>
+        <p data-editable contenteditable="false" data-key="h3-text">Засушливые равнины, редколесья, каменистые склоны. Агамы превосходно лазают по деревьям и камням.</p>
+      </div>
+      <div class="habitat-item" data-habitat-id="h4">
+        <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+        <div class="habitat-photo-overlay"><button class="habitat-photo-btn" onclick="openHabitatPhoto(this.closest('.habitat-item'))">📷 Фото</button></div>
+        <div class="habitat-icon" data-editable contenteditable="false" data-key="h4-ico">🌿</div>
+        <h3 data-editable contenteditable="false" data-key="h4-title">Питание в природе</h3>
+        <p data-editable contenteditable="false" data-key="h4-text">Всеядны: насекомые, мелкие грызуны, цветы, листья, плоды. Рацион меняется с возрастом — молодняк ест больше белка.</p>
+      </div>
+      <div class="add-morph-btn" onclick="addHabitatCard()">
+        <span style="font-size:28px;">➕</span>
+        <span>Добавить карточку</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CARE ═══ -->
+<section class="care" id="care" data-section-label="УХОД">
+  <div class="section-label">🏠 Уход и содержание</div>
+  <h2 class="section-title">Как заботиться<br/><em data-editable contenteditable="false" data-key="care-em">об агаме?</em></h2>
+  <div class="care-timeline" id="careTimeline">
+    <div class="care-step">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:16px;right:8px;">✕</button>
+      <div class="step-marker">01</div>
+      <div class="step-content">
+        <h3 data-editable contenteditable="false" data-key="c1-title">🏡 Террариум</h3>
+        <p data-editable contenteditable="false" data-key="c1-text">Минимальный размер для взрослой особи — 120×60×60 см. Несколько температурных зон: точка прогрева 50–55°C, прохладная зона 26–28°C.</p>
+        <div class="step-tag" data-editable contenteditable="false" data-key="c1-tag">Обустройство</div>
+      </div>
+    </div>
+    <div class="care-step">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:16px;right:8px;">✕</button>
+      <div class="step-marker">02</div>
+      <div class="step-content">
+        <h3 data-editable contenteditable="false" data-key="c2-title">💡 УФ-освещение</h3>
+        <p data-editable contenteditable="false" data-key="c2-text">Лампы UVB 10.0 или 12% — обязательны. Они имитируют солнечное излучение, необходимое для синтеза витамина D3 и усвоения кальция.</p>
+        <div class="step-tag" data-editable contenteditable="false" data-key="c2-tag">Здоровье</div>
+      </div>
+    </div>
+    <div class="care-step">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:16px;right:8px;">✕</button>
+      <div class="step-marker">03</div>
+      <div class="step-content">
+        <h3 data-editable contenteditable="false" data-key="c3-title">🥗 Питание</h3>
+        <p data-editable contenteditable="false" data-key="c3-text">Молодняк: 70% насекомых + 30% зелени. Взрослые: 70% овощей и зелени + 30% насекомых. Кальций — ежедневно, витамины — 2 раза в неделю.</p>
+        <div class="step-tag" data-editable contenteditable="false" data-key="c3-tag">Рацион</div>
+      </div>
+    </div>
+    <div class="care-step">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:16px;right:8px;">✕</button>
+      <div class="step-marker">04</div>
+      <div class="step-content">
+        <h3 data-editable contenteditable="false" data-key="c4-title">🛁 Купание</h3>
+        <p data-editable contenteditable="false" data-key="c4-text">1–2 раза в неделю тёплые ванночки (30–32°C) по 15–20 минут. Помогают с гидратацией, пищеварением и линькой.</p>
+        <div class="step-tag" data-editable contenteditable="false" data-key="c4-tag">Гигиена</div>
+      </div>
+    </div>
+    <div class="care-step">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:16px;right:8px;">✕</button>
+      <div class="step-marker">05</div>
+      <div class="step-content">
+        <h3 data-editable contenteditable="false" data-key="c5-title">🤝 Социализация</h3>
+        <p data-editable contenteditable="false" data-key="c5-text">Агамы привязываются к хозяину. Ежедневный ручной контакт делает их спокойными и дружелюбными. Не содержите самцов вместе — они агрессивны.</p>
+        <div class="step-tag" data-editable contenteditable="false" data-key="c5-tag">Поведение</div>
+      </div>
+    </div>
+  </div>
+  <button class="add-card-btn" onclick="addCareCard()">➕ Добавить шаг ухода</button>
+</section>
+
+<!-- ═══ GALLERY ═══ -->
+<section class="gallery" id="gallery" data-section-label="ГАЛЕРЕЯ">
+  <div class="section-label">🎨 Галерея</div>
+  <h2 class="section-title">Цвета<br/><em data-editable contenteditable="false" data-key="gal-em">и морфы!</em></h2>
+  <div class="morph-grid" id="morphGrid">
+    <div class="morph-card" style="--cc:#C4723A" data-morph-id="m1">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить">✕</button>
+      <div class="morph-color-picker"><input type="color" value="#C4723A" oninput="changeMorphColor(this)" title="Цвет карточки"/></div>
+      <div class="morph-swatch">
+        <div class="morph-photo-overlay" onclick="openMorphPhoto(this.closest('.morph-card'))">
+          <span style="font-size:22px;">📷</span><span>Фото</span>
+        </div>
+        <span data-editable contenteditable="false" data-key="g1-em">🦎</span>
+      </div>
+      <div class="morph-info">
+        <h3 data-editable contenteditable="false" data-key="g1-title">Wild Type</h3>
+        <p data-editable contenteditable="false" data-key="g1-text">Природный окрас: коричнево-рыжий с узором. Классика австралийской пустыни.</p>
+      </div>
+    </div>
+    <div class="morph-card" style="--cc:#E84C30" data-morph-id="m2">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить">✕</button>
+      <div class="morph-color-picker"><input type="color" value="#E84C30" oninput="changeMorphColor(this)" title="Цвет карточки"/></div>
+      <div class="morph-swatch">
+        <div class="morph-photo-overlay" onclick="openMorphPhoto(this.closest('.morph-card'))">
+          <span style="font-size:22px;">📷</span><span>Фото</span>
+        </div>
+        <span data-editable contenteditable="false" data-key="g2-em">🔥</span>
+      </div>
+      <div class="morph-info">
+        <h3 data-editable contenteditable="false" data-key="g2-title">Red / Citrus</h3>
+        <p data-editable contenteditable="false" data-key="g2-text">Яркий красно-оранжевый окрас. Результат многолетней селекции.</p>
+      </div>
+    </div>
+    <div class="morph-card" style="--cc:#F5C842" data-morph-id="m3">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить">✕</button>
+      <div class="morph-color-picker"><input type="color" value="#F5C842" oninput="changeMorphColor(this)" title="Цвет карточки"/></div>
+      <div class="morph-swatch">
+        <div class="morph-photo-overlay" onclick="openMorphPhoto(this.closest('.morph-card'))">
+          <span style="font-size:22px;">📷</span><span>Фото</span>
+        </div>
+        <span data-editable contenteditable="false" data-key="g3-em">⭐</span>
+      </div>
+      <div class="morph-info">
+        <h3 data-editable contenteditable="false" data-key="g3-title">Yellow / Gold</h3>
+        <p data-editable contenteditable="false" data-key="g3-text">Золотисто-жёлтый, часто с оранжевыми оттенками. Очень эффектен.</p>
+      </div>
+    </div>
+    <div class="morph-card" style="--cc:#D4C49A" data-morph-id="m4">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить">✕</button>
+      <div class="morph-color-picker"><input type="color" value="#D4C49A" oninput="changeMorphColor(this)" title="Цвет карточки"/></div>
+      <div class="morph-swatch">
+        <div class="morph-photo-overlay" onclick="openMorphPhoto(this.closest('.morph-card'))">
+          <span style="font-size:22px;">📷</span><span>Фото</span>
+        </div>
+        <span data-editable contenteditable="false" data-key="g4-em">🏝️</span>
+      </div>
+      <div class="morph-info">
+        <h3 data-editable contenteditable="false" data-key="g4-title">Sandfire</h3>
+        <p data-editable contenteditable="false" data-key="g4-text">Светло-кремовый с тёплым оттенком. Один из первых культурных морфов.</p>
+      </div>
+    </div>
+    <div class="morph-card" style="--cc:#2a2a2a" data-morph-id="m5">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить">✕</button>
+      <div class="morph-color-picker"><input type="color" value="#2a2a2a" oninput="changeMorphColor(this)" title="Цвет карточки"/></div>
+      <div class="morph-swatch">
+        <div class="morph-photo-overlay" onclick="openMorphPhoto(this.closest('.morph-card'))">
+          <span style="font-size:22px;">📷</span><span>Фото</span>
+        </div>
+        <span data-editable contenteditable="false" data-key="g5-em">🌑</span>
+      </div>
+      <div class="morph-info">
+        <h3 data-editable contenteditable="false" data-key="g5-title">Melanistic</h3>
+        <p data-editable contenteditable="false" data-key="g5-text">Тёмный, почти чёрный окрас. Редкий и очень впечатляющий.</p>
+      </div>
+    </div>
+    <div class="morph-card" style="--cc:#A8D8A8" data-morph-id="m6">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить">✕</button>
+      <div class="morph-color-picker"><input type="color" value="#A8D8A8" oninput="changeMorphColor(this)" title="Цвет карточки"/></div>
+      <div class="morph-swatch">
+        <div class="morph-photo-overlay" onclick="openMorphPhoto(this.closest('.morph-card'))">
+          <span style="font-size:22px;">📷</span><span>Фото</span>
+        </div>
+        <span data-editable contenteditable="false" data-key="g6-em">💚</span>
+      </div>
+      <div class="morph-info">
+        <h3 data-editable contenteditable="false" data-key="g6-title">Translucent</h3>
+        <p data-editable contenteditable="false" data-key="g6-text">Полупрозрачная чешуя, тёмные глаза без радужки. Уникальная генетика.</p>
+      </div>
+    </div>
+    <div class="add-morph-btn" onclick="addMorphCard()">
+      <span style="font-size:28px;">➕</span>
+      <span>Добавить морф</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FACTS ═══ -->
+<section class="facts" id="facts" data-section-label="ФАКТЫ">
+  <div class="section-label">⚡ Интересные факты</div>
+  <h2 class="section-title">Удивительные<br/><em data-editable contenteditable="false" data-key="facts-em">особенности!</em></h2>
+  <div class="facts-masonry" id="factsMasonry">
+    <div class="fact-card large">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+      <div class="fact-number">01</div>
+      <h3 data-editable contenteditable="false" data-key="f1-title">👁️ Третий глаз</h3>
+      <p data-editable contenteditable="false" data-key="f1-text">На темени агамы находится теменной орган — «третий глаз», чувствительный к свету. Он помогает регулировать биоритмы и реагировать на тени хищников.</p>
+    </div>
+    <div class="fact-card">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+      <div class="fact-number">02</div>
+      <h3 data-editable contenteditable="false" data-key="f2-title">🎨 Смена цвета</h3>
+      <p data-editable contenteditable="false" data-key="f2-text">Агамы меняют цвет в зависимости от температуры и настроения. Тёмный окрас = активное поглощение тепла.</p>
+    </div>
+    <div class="fact-card">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+      <div class="fact-number">03</div>
+      <h3 data-editable contenteditable="false" data-key="f3-title">👋 Машут лапой</h3>
+      <p data-editable contenteditable="false" data-key="f3-text">Круговые движения передней лапой — знак признания особи своего вида. Самки «здороваются» чаще самцов.</p>
+    </div>
+    <div class="fact-card large">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+      <div class="fact-number">04</div>
+      <h3 data-editable contenteditable="false" data-key="f4-title">😴 Брюмация</h3>
+      <p data-editable contenteditable="false" data-key="f4-text">Зимой агамы впадают в состояние брюмации — аналог спячки рептилий. Обмен веществ замедляется, питомец становится вялым. Это нормально и физиологически необходимо!</p>
+    </div>
+    <div class="fact-card">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+      <div class="fact-number">05</div>
+      <h3 data-editable contenteditable="false" data-key="f5-title">🤜 Кивок головой</h3>
+      <p data-editable contenteditable="false" data-key="f5-text">Быстрые кивки — демонстрация доминирования у самцов. Медленные — у самок в ответ.</p>
+    </div>
+    <div class="fact-card">
+      <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+      <div class="fact-number">06</div>
+      <h3 data-editable contenteditable="false" data-key="f6-title">🖤 Чёрная борода</h3>
+      <p data-editable contenteditable="false" data-key="f6-text">Потемнение горлового мешка — стресс, агрессия или территориальное поведение. Сигнал: «Я серьёзен!»</p>
+    </div>
+  </div>
+  <button class="add-card-btn" onclick="addFactCard()">➕ Добавить факт</button>
+</section>
+
+<!-- ═══ INTERESTING FILES ═══ -->
+<section class="ifiles" id="ifiles" data-section-label="ФАЙЛЫ">
+  <div class="ifiles-content">
+    <div class="section-label">📁 Интересные файлы</div>
+    <h2 class="section-title">Полезные<br/><em data-editable contenteditable="false" data-key="ifiles-em">материалы!</em></h2>
+    <div class="ifiles-grid" id="iFilesGrid">
+      <!-- Files rendered by JS -->
+    </div>
+    <div class="ifiles-empty" id="iFilesEmpty" style="display:none;">
+      <div style="font-size:48px;margin-bottom:16px;">📂</div>
+      <div>Файлы появятся здесь после добавления через панель администратора</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer" data-section-label="ПОДВАЛ">
+  <div class="footer-deco">
+    <span>🌿</span><span>🦎</span><span>🍃</span><span>🌱</span><span>🦎</span><span>🌿</span>
+  </div>
+  <div class="footer-top">
+    <div class="footer-logo">
+      <span class="logo-shelby">shelby</span><span class="logo-book">-book</span>
+    </div>
+    <p class="footer-tagline"><em data-editable contenteditable="false" data-key="ft-tagline">Pogona vitticeps — ящерица, которая завоёвывает сердца! 💚</em></p>
+  </div>
+  <div class="footer-links">
+    <a href="#about">О виде</a><a href="#habitat">Среда обитания</a>
+    <a href="#care">Уход</a><a href="#gallery">Галерея</a>
+    <a href="#facts">Факты</a><a href="#ifiles">Файлы</a>
+    <a href="https://t.me/justshelby" target="_blank">✈️ ТГ Канал</a>
+  </div>
+  <div class="footer-bottom">
+    <span data-editable contenteditable="false" data-key="ft-copy">© 2026 Shelby-book</span>
+    <span data-editable contenteditable="false" data-key="ft-sub">Сделано с 💚 для любителей рептилий</span>
+  </div>
+</footer>
+
+<div id="editSaveToast">✅ Сохранено!</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   FONTS DB — 120+ fonts
+═══════════════════════════════════════════ */
+const FONTS = [
+  {n:'Fredoka One',u:'Fredoka+One',cat:'🎉 Игровые'},
+  {n:'Bubblegum Sans',u:'Bubblegum+Sans',cat:'🎉 Игровые'},
+  {n:'Boogaloo',u:'Boogaloo',cat:'🎉 Игровые'},
+  {n:'Lilita One',u:'Lilita+One',cat:'🎉 Игровые'},
+  {n:'Chewy',u:'Chewy',cat:'🎉 Игровые'},
+  {n:'Titan One',u:'Titan+One',cat:'🎉 Игровые'},
+  {n:'Baloo 2',u:'Baloo+2:wght@700',cat:'🎉 Игровые'},
+  {n:'Bangers',u:'Bangers',cat:'🎉 Игровые'},
+  {n:'Shrikhand',u:'Shrikhand',cat:'🎉 Игровые'},
+  {n:'Luckiest Guy',u:'Luckiest+Guy',cat:'🎉 Игровые'},
+  {n:'Righteous',u:'Righteous',cat:'🎉 Игровые'},
+  {n:'Pacifico',u:'Pacifico',cat:'🎉 Игровые'},
+  {n:'Lobster',u:'Lobster',cat:'🎉 Игровые'},
+  {n:'Passion One',u:'Passion+One:wght@700',cat:'🎉 Игровые'},
+  {n:'Black Ops One',u:'Black+Ops+One',cat:'🎉 Игровые'},
+  {n:'Nunito',u:'Nunito:wght@800',cat:'🌸 Округлые'},
+  {n:'Nunito Sans',u:'Nunito+Sans:wght@800',cat:'🌸 Округлые'},
+  {n:'Varela Round',u:'Varela+Round',cat:'🌸 Округлые'},
+  {n:'Comfortaa',u:'Comfortaa:wght@700',cat:'🌸 Округлые'},
+  {n:'Quicksand',u:'Quicksand:wght@700',cat:'🌸 Округлые'},
+  {n:'Poppins',u:'Poppins:wght@700',cat:'🌸 Округлые'},
+  {n:'Rubik',u:'Rubik:wght@700',cat:'🌸 Округлые'},
+  {n:'Sora',u:'Sora:wght@700',cat:'🌸 Округлые'},
+  {n:'Playfair Display',u:'Playfair+Display:wght@700',cat:'👑 Элегантные'},
+  {n:'Merriweather',u:'Merriweather:wght@700',cat:'👑 Элегантные'},
+  {n:'Lora',u:'Lora:wght@700',cat:'👑 Элегантные'},
+  {n:'PT Serif',u:'PT+Serif:wght@700',cat:'👑 Элегантные'},
+  {n:'Cormorant Garamond',u:'Cormorant+Garamond:wght@700',cat:'👑 Элегантные'},
+  {n:'Open Sans',u:'Open+Sans:wght@700',cat:'🔷 Современные'},
+  {n:'Roboto',u:'Roboto:wght@700',cat:'🔷 Современные'},
+  {n:'Montserrat',u:'Montserrat:wght@700',cat:'🔷 Современные'},
+  {n:'Raleway',u:'Raleway:wght@700',cat:'🔷 Современные'},
+  {n:'Oswald',u:'Oswald:wght@600',cat:'🔷 Современные'},
+  {n:'Manrope',u:'Manrope:wght@800',cat:'🔷 Современные'},
+  {n:'Inter',u:'Inter:wght@700',cat:'🔷 Современные'},
+  {n:'Jost',u:'Jost:wght@700',cat:'🔷 Современные'},
+  {n:'Mulish',u:'Mulish:wght@800',cat:'🔷 Современные'},
+  {n:'Outfit',u:'Outfit:wght@700',cat:'🔷 Современные'},
+  {n:'Plus Jakarta Sans',u:'Plus+Jakarta+Sans:wght@700',cat:'🔷 Современные'},
+  {n:'Lexend',u:'Lexend:wght@700',cat:'🔷 Современные'},
+  {n:'Caveat',u:'Caveat:wght@700',cat:'✍️ Рукописные'},
+  {n:'Patrick Hand',u:'Patrick+Hand',cat:'✍️ Рукописные'},
+  {n:'Kalam',u:'Kalam:wght@700',cat:'✍️ Рукописные'},
+  {n:'Gloria Hallelujah',u:'Gloria+Hallelujah',cat:'✍️ Рукописные'},
+  {n:'Indie Flower',u:'Indie+Flower',cat:'✍️ Рукописные'},
+  {n:'Gochi Hand',u:'Gochi+Hand',cat:'✍️ Рукописные'},
+  {n:'Dancing Script',u:'Dancing+Script:wght@700',cat:'✍️ Рукописные'},
+  {n:'Satisfy',u:'Satisfy',cat:'✍️ Рукописные'},
+  {n:'Sacramento',u:'Sacramento',cat:'✍️ Рукописные'},
+  {n:'Bebas Neue',u:'Bebas+Neue',cat:'🕹️ Декоративные'},
+  {n:'Russo One',u:'Russo+One',cat:'🕹️ Декоративные'},
+  {n:'Orbitron',u:'Orbitron:wght@700',cat:'🕹️ Декоративные'},
+  {n:'VT323',u:'VT323',cat:'🕹️ Декоративные'},
+  {n:'Press Start 2P',u:'Press+Start+2P',cat:'🕹️ Декоративные'},
+  {n:'Permanent Marker',u:'Permanent+Marker',cat:'🕹️ Декоративные'},
+];
+
+const seen = new Set();
+const FONTS_UNIQUE = FONTS.filter(f => { if(seen.has(f.n)) return false; seen.add(f.n); return true; });
+
+/* ═══ STATE ═══ */
+let isEditMode = false;
+let originals = {};
+let fontTarget = 'title';
+let selectedFont = null;
+let loadedFonts = new Set();
+let customFonts = [];
+let currentMorphCardForPhoto = null;
+let currentHabitatItemForPhoto = null;
+
+/* ═══ INIT ═══ */
+window.addEventListener('DOMContentLoaded', () => {
+  loadSavedContent();
+  loadMorphColors();
+  loadMorphPhotos();
+  loadHabitatPhotos();
+  loadHeroImage();
+  applyTgLinks();
+  updateCareNumbers();
+  updateFactNumbers();
+  buildFontList();
+  renderPublicFiles();
+  loadCustomFonts();
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('edit') === '1' && localStorage.getItem('sb_admin_session') === '1') {
+    enterEditMode();
+  }
+});
+
+/* ═══ MOBILE MENU ═══ */
+function toggleMobileMenu() {
+  const menu = document.getElementById('navMobileMenu');
+  const hamburger = document.getElementById('navHamburger');
+  const open = menu.classList.toggle('open');
+  hamburger.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+
+/* ═══ PUBLIC FILES SECTION ═══ */
+function renderPublicFiles() {
+  const files = JSON.parse(localStorage.getItem('sb_public_files') || '[]');
+  const grid = document.getElementById('iFilesGrid');
+  const empty = document.getElementById('iFilesEmpty');
+  grid.innerHTML = '';
+  if (!files.length) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  files.forEach((f, i) => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    const icon = ext === 'pdf' ? '📄' : ['jpg','jpeg','png','webp','gif'].includes(ext) ? '🖼️' : ['mp4','mov','avi'].includes(ext) ? '🎬' : ['mp3','wav','ogg'].includes(ext) ? '🎵' : '📁';
+    const card = document.createElement('a');
+    card.className = 'ifile-card';
+    card.href = f.data || '#';
+    card.download = f.name;
+    card.setAttribute('target', '_blank');
+    card.innerHTML = `
+      <div class="ifile-icon">${icon}</div>
+      <div class="ifile-name">${f.name}</div>
+      ${f.desc ? `<div class="ifile-desc">${f.desc}</div>` : ''}
+      <div class="ifile-meta">${f.size || ''} · ${f.date || ''}</div>
+      <div class="ifile-dl">⬇ Скачать</div>
+    `;
+    grid.appendChild(card);
+    // animate in
+    requestAnimationFrame(() => {
+      setTimeout(() => card.classList.add('visible'), i * 60);
+    });
+  });
+}
+
+/* ═══ EDIT MODE ═══ */
+function enterEditMode() {
+  isEditMode = true;
+  document.body.classList.add('edit-mode');
+  document.getElementById('adminEditBar').classList.add('active');
+  document.getElementById('noCopyOverlay').style.display = 'none';
+  document.getElementById('fabGroup').style.display = 'none';
+
+  document.querySelectorAll('[data-editable]').forEach(el => {
+    el.contentEditable = 'true';
+    el.spellcheck = false;
+    el.addEventListener('keydown', e => { if(e.key==='Enter') e.preventDefault(); });
+  });
+  document.querySelectorAll('[data-key]').forEach(el => { originals[el.dataset.key] = el.innerHTML; });
+}
+
+function saveAllEdits() {
+  const data = JSON.parse(localStorage.getItem('sb_inline_content') || '{}');
+  document.querySelectorAll('[data-key]').forEach(el => { data[el.dataset.key] = el.innerHTML; });
+  const mc = [];
+  document.querySelectorAll('.morph-card').forEach(card => {
+    const m = (card.getAttribute('style')||'').match(/--cc:\s*([^;]+)/);
+    mc.push(m ? m[1].trim() : '#4CAF50');
+  });
+  data['__morphColors'] = mc;
+  data['__aboutCards_html'] = document.getElementById('aboutCardsContainer').innerHTML;
+  data['__habitatGrid_html'] = document.getElementById('habitatGrid').innerHTML;
+  data['__careTimeline_html'] = document.getElementById('careTimeline').innerHTML;
+  data['__morphGrid_html'] = document.getElementById('morphGrid').innerHTML;
+  data['__factsMasonry_html'] = document.getElementById('factsMasonry').innerHTML;
+  localStorage.setItem('sb_inline_content', JSON.stringify(data));
+  showToast('💾 Сохранено!');
+  document.querySelectorAll('[data-key]').forEach(el => { originals[el.dataset.key] = el.innerHTML; });
+}
+
+function discardEdits() {
+  if (!confirm('Отменить все несохранённые изменения?')) return;
+  document.querySelectorAll('[data-key]').forEach(el => {
+    if (originals[el.dataset.key] !== undefined) el.innerHTML = originals[el.dataset.key];
+  });
+  showToast('↺ Отменено');
+}
+
+function goBackToAdmin() {
+  if (hasUnsaved()) {
+    const save = confirm('Есть несохранённые изменения. Сохранить?');
+    if (save) saveAllEdits();
+  }
+  window.location.href = 'admin-shelby-x7k2.html';
+}
+
+function hasUnsaved() {
+  let changed = false;
+  document.querySelectorAll('[data-key]').forEach(el => {
+    if (originals[el.dataset.key] !== el.innerHTML) changed = true;
+  });
+  return changed;
+}
+
+window.addEventListener('beforeunload', e => {
+  if (isEditMode && hasUnsaved()) { e.preventDefault(); e.returnValue = ''; }
+});
+
+/* ═══ LOAD SAVED ═══ */
+function loadSavedContent() {
+  const saved = JSON.parse(localStorage.getItem('sb_inline_content') || 'null');
+  if (!saved) return;
+  if (saved['__aboutCards_html']) document.getElementById('aboutCardsContainer').innerHTML = saved['__aboutCards_html'];
+  if (saved['__habitatGrid_html']) document.getElementById('habitatGrid').innerHTML = saved['__habitatGrid_html'];
+  if (saved['__careTimeline_html']) document.getElementById('careTimeline').innerHTML = saved['__careTimeline_html'];
+  if (saved['__morphGrid_html']) document.getElementById('morphGrid').innerHTML = saved['__morphGrid_html'];
+  if (saved['__factsMasonry_html']) document.getElementById('factsMasonry').innerHTML = saved['__factsMasonry_html'];
+  document.querySelectorAll('[data-key]').forEach(el => {
+    if (saved[el.dataset.key] !== undefined) el.innerHTML = saved[el.dataset.key];
+  });
+}
+
+/* ═══ PHOTO: MORPH CARDS ═══ */
+function openMorphPhoto(card) {
+  if (!isEditMode) return;
+  currentMorphCardForPhoto = card;
+  document.getElementById('morphImgInput').click();
+}
+
+function handleMorphPhotoUpload(input) {
+  const file = input.files[0];
+  if (!file || !currentMorphCardForPhoto) return;
+  if (file.size > 5*1024*1024) { showToast('❌ Максимум 5MB'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const swatch = currentMorphCardForPhoto.querySelector('.morph-swatch');
+    const morphId = currentMorphCardForPhoto.dataset.morphId || ('m' + Date.now());
+    currentMorphCardForPhoto.dataset.morphId = morphId;
+    swatch.style.backgroundImage = `url('${e.target.result}')`;
+    swatch.style.backgroundSize = 'cover';
+    swatch.style.backgroundPosition = 'center';
+    swatch.classList.add('has-photo');
+    // Save
+    const photos = JSON.parse(localStorage.getItem('sb_morph_photos') || '{}');
+    photos[morphId] = e.target.result;
+    localStorage.setItem('sb_morph_photos', JSON.stringify(photos));
+    showToast('📷 Фото морфа добавлено!');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function loadMorphPhotos() {
+  const photos = JSON.parse(localStorage.getItem('sb_morph_photos') || '{}');
+  document.querySelectorAll('.morph-card').forEach(card => {
+    const id = card.dataset.morphId;
+    if (id && photos[id]) {
+      const swatch = card.querySelector('.morph-swatch');
+      if (swatch) {
+        swatch.style.backgroundImage = `url('${photos[id]}')`;
+        swatch.style.backgroundSize = 'cover';
+        swatch.style.backgroundPosition = 'center';
+        swatch.classList.add('has-photo');
+      }
+    }
+  });
+}
+
+/* ═══ PHOTO: HABITAT ITEMS ═══ */
+function openHabitatPhoto(item) {
+  if (!isEditMode) return;
+  currentHabitatItemForPhoto = item;
+  document.getElementById('habitatImgInput').click();
+}
+
+function handleHabitatPhotoUpload(input) {
+  const file = input.files[0];
+  if (!file || !currentHabitatItemForPhoto) return;
+  if (file.size > 5*1024*1024) { showToast('❌ Максимум 5MB'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const item = currentHabitatItemForPhoto;
+    const habitatId = item.dataset.habitatId || ('h' + Date.now());
+    item.dataset.habitatId = habitatId;
+    item.style.backgroundImage = `url('${e.target.result}')`;
+    item.classList.add('has-photo');
+    const photos = JSON.parse(localStorage.getItem('sb_habitat_photos') || '{}');
+    photos[habitatId] = e.target.result;
+    localStorage.setItem('sb_habitat_photos', JSON.stringify(photos));
+    showToast('📷 Фото среды добавлено!');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function loadHabitatPhotos() {
+  const photos = JSON.parse(localStorage.getItem('sb_habitat_photos') || '{}');
+  document.querySelectorAll('.habitat-item').forEach(item => {
+    const id = item.dataset.habitatId;
+    if (id && photos[id]) {
+      item.style.backgroundImage = `url('${photos[id]}')`;
+      item.classList.add('has-photo');
+    }
+  });
+}
+
+/* ═══ ADD CARD FUNCTIONS ═══ */
+let cardCounter = 100;
+
+function makeEditable(el) {
+  if (!isEditMode) return;
+  el.contentEditable = 'true';
+  el.spellcheck = false;
+  el.addEventListener('keydown', e => { if(e.key==='Enter') e.preventDefault(); });
+}
+function activateEditables(container) {
+  container.querySelectorAll('[data-editable]').forEach(el => makeEditable(el));
+}
+
+function addAboutCard() {
+  cardCounter++;
+  const div = document.createElement('div');
+  div.className = 'about-card animated visible';
+  div.innerHTML = `
+    <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+    <div class="card-icon" data-editable contenteditable="true" data-key="ac${cardCounter}-icon">🌟</div>
+    <h3 data-editable contenteditable="true" data-key="ac${cardCounter}-title">Новый факт</h3>
+    <p data-editable contenteditable="true" data-key="ac${cardCounter}-text">Введи описание здесь!</p>
+  `;
+  document.getElementById('aboutCardsContainer').appendChild(div);
+  activateEditables(div);
+  div.scrollIntoView({behavior:'smooth', block:'center'});
+  showToast('➕ Карточка добавлена!');
+}
+
+function addHabitatCard() {
+  cardCounter++;
+  const grid = document.getElementById('habitatGrid');
+  const addBtn = grid.querySelector('.add-morph-btn');
+  const div = document.createElement('div');
+  const id = 'hc' + cardCounter;
+  div.className = 'habitat-item animated visible';
+  div.dataset.habitatId = id;
+  div.innerHTML = `
+    <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить" style="top:8px;right:8px;">✕</button>
+    <div class="habitat-photo-overlay"><button class="habitat-photo-btn" onclick="openHabitatPhoto(this.closest('.habitat-item'))">📷 Фото</button></div>
+    <div class="habitat-icon" data-editable contenteditable="true" data-key="${id}-ico">🌍</div>
+    <h3 data-editable contenteditable="true" data-key="${id}-title">Новая карточка</h3>
+    <p data-editable contenteditable="true" data-key="${id}-text">Описание среды обитания!</p>
+  `;
+  grid.insertBefore(div, addBtn);
+  activateEditables(div);
+  div.scrollIntoView({behavior:'smooth', block:'center'});
+  showToast('➕ Карточка добавлена!');
+}
+
+function addCareCard() {
+  cardCounter++;
+  const timeline = document.getElementById('careTimeline');
+  const div = document.createElement('div');
+  div.className = 'care-step animated visible';
+  const num = timeline.querySelectorAll('.care-step').length + 1;
+  div.innerHTML = `
+    <button class="card-del-btn" onclick="deleteCard(this.parentElement);updateCareNumbers();" title="Удалить" style="top:16px;right:8px;">✕</button>
+    <div class="step-marker">${String(num).padStart(2,'0')}</div>
+    <div class="step-content">
+      <h3 data-editable contenteditable="true" data-key="cc${cardCounter}-title">🆕 Новый шаг</h3>
+      <p data-editable contenteditable="true" data-key="cc${cardCounter}-text">Опиши шаг по уходу!</p>
+      <div class="step-tag" data-editable contenteditable="true" data-key="cc${cardCounter}-tag">Уход</div>
+    </div>
+  `;
+  timeline.appendChild(div);
+  activateEditables(div);
+  div.scrollIntoView({behavior:'smooth', block:'center'});
+  showToast('➕ Шаг добавлен!');
+}
+
+function addMorphCard() {
+  cardCounter++;
+  const grid = document.getElementById('morphGrid');
+  const addBtn = grid.querySelector('.add-morph-btn');
+  const colors = ['#4CAF50','#FF7043','#FDD835','#29B6F6','#AB47BC','#FF4081'];
+  const color = colors[Math.floor(Math.random()*colors.length)];
+  const emojis = ['🦎','🌈','✨','🔮','🎨','🌟','💎','🔥'];
+  const em = emojis[Math.floor(Math.random()*emojis.length)];
+  const id = 'mc' + cardCounter;
+  const div = document.createElement('div');
+  div.className = 'morph-card animated visible';
+  div.dataset.morphId = id;
+  div.setAttribute('style', `--cc:${color}`);
+  div.innerHTML = `
+    <button class="card-del-btn" onclick="deleteCard(this.parentElement)" title="Удалить">✕</button>
+    <div class="morph-color-picker"><input type="color" value="${color}" oninput="changeMorphColor(this)" title="Цвет"/></div>
+    <div class="morph-swatch">
+      <div class="morph-photo-overlay" onclick="openMorphPhoto(this.closest('.morph-card'))">
+        <span style="font-size:22px;">📷</span><span>Фото</span>
+      </div>
+      <span data-editable contenteditable="true" data-key="gc${cardCounter}-em">${em}</span>
+    </div>
+    <div class="morph-info">
+      <h3 data-editable contenteditable="true" data-key="gc${cardCounter}-title">Новый морф</h3>
+      <p data-editable contenteditable="true" data-key="gc${cardCounter}-text">Описание морфа!</p>
+    </div>
+  `;
+  grid.insertBefore(div, addBtn);
+  activateEditables(div);
+  div.scrollIntoView({behavior:'smooth', block:'center'});
+  showToast('➕ Морф добавлен!');
+}
+
+function addFactCard() {
+  cardCounter++;
+  const masonry = document.getElementById('factsMasonry');
+  const div = document.createElement('div');
+  div.className = 'fact-card animated visible';
+  const num = masonry.querySelectorAll('.fact-card').length + 1;
+  div.innerHTML = `
+    <button class="card-del-btn" onclick="deleteCard(this.parentElement);updateFactNumbers();" title="Удалить" style="top:8px;right:8px;">✕</button>
+    <div class="fact-number">${String(num).padStart(2,'0')}</div>
+    <h3 data-editable contenteditable="true" data-key="fc${cardCounter}-title">⚡ Новый факт</h3>
+    <p data-editable contenteditable="true" data-key="fc${cardCounter}-text">Удивительный факт об агаме!</p>
+  `;
+  masonry.appendChild(div);
+  activateEditables(div);
+  div.scrollIntoView({behavior:'smooth', block:'center'});
+  showToast('➕ Факт добавлен!');
+}
+
+function deleteCard(el) {
+  if (!confirm('Удалить эту карточку?')) return;
+  el.style.transition = 'opacity .3s, transform .3s';
+  el.style.opacity = '0';
+  el.style.transform = 'scale(.9)';
+  setTimeout(() => { el.remove(); updateCareNumbers(); updateFactNumbers(); }, 300);
+}
+
+function updateCareNumbers() {
+  document.querySelectorAll('#careTimeline .care-step .step-marker').forEach((m,i) => {
+    m.textContent = String(i+1).padStart(2,'0');
+  });
+}
+function updateFactNumbers() {
+  document.querySelectorAll('#factsMasonry .fact-card .fact-number').forEach((n,i) => {
+    n.textContent = String(i+1).padStart(2,'0');
+  });
+}
+
+/* ═══ MORPH COLOR ═══ */
+function loadMorphColors() {
+  const saved = JSON.parse(localStorage.getItem('sb_inline_content') || 'null');
+  if (!saved || !saved['__morphColors']) return;
+  document.querySelectorAll('.morph-card').forEach((card,i) => {
+    const c = saved['__morphColors'][i];
+    if (c) {
+      card.setAttribute('style','--cc:'+c);
+      const inp = card.querySelector('.morph-color-picker input');
+      if (inp) inp.value = c;
+    }
+  });
+}
+function changeMorphColor(input) {
+  const card = input.closest('.morph-card');
+  card.setAttribute('style','--cc:'+input.value);
+}
+
+/* ═══ HERO IMAGE ═══ */
+function loadHeroImage() {
+  const img = localStorage.getItem('sb_hero_image');
+  if (img) {
+    document.getElementById('heroDefaultSvg').style.display = 'none';
+    const el = document.getElementById('heroCustomImg');
+    el.src = img; el.style.display = 'block';
+  }
+}
+function replaceHeroImage(input) {
+  const file = input.files[0]; if(!file) return;
+  if (file.size > 5*1024*1024) { showToast('❌ Файл слишком большой!'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    localStorage.setItem('sb_hero_image', e.target.result);
+    document.getElementById('heroDefaultSvg').style.display = 'none';
+    const el = document.getElementById('heroCustomImg');
+    el.src = e.target.result; el.style.display = 'block';
+    showToast('🖼️ Фото обновлено!');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+/* ═══ CUSTOM FONTS ═══ */
+function loadCustomFonts() {
+  customFonts = JSON.parse(localStorage.getItem('sb_custom_fonts') || '[]');
+  renderCustomFontsUI();
+}
+
+function handleCustomFontUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10*1024*1024) { showToast('❌ Шрифт слишком большой (макс 10MB)'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const fontName = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g,' ');
+    const ext = file.name.split('.').pop().toLowerCase();
+    const mimeMap = {ttf:'truetype', otf:'opentype', woff:'woff', woff2:'woff2'};
+    const mime = mimeMap[ext] || 'truetype';
+    const data = e.target.result;
+    // Inject @font-face
+    injectCustomFont(fontName, data, mime);
+    customFonts.push({name: fontName, data, mime, ext});
+    localStorage.setItem('sb_custom_fonts', JSON.stringify(customFonts));
+    renderCustomFontsUI();
+    // Add to font list
+    buildFontList();
+    showToast(`✍️ Шрифт «${fontName}» загружен!`);
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function injectCustomFont(name, data, mime) {
+  const style = document.createElement('style');
+  style.textContent = `@font-face { font-family: '${name}'; src: url('${data}') format('${mime}'); font-display: swap; }`;
+  document.head.appendChild(style);
+}
+
+function renderCustomFontsUI() {
+  const container = document.getElementById('customFontsLoaded');
+  if (!container) return;
+  container.innerHTML = customFonts.map((f,i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:rgba(76,175,80,.06);border:1px solid rgba(76,175,80,.2);border-radius:8px;">
+      <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);font-family:'${f.name}',sans-serif;">${f.name}</span>
+      <div style="display:flex;gap:6px;">
+        <button onclick="selectCustomFont('${f.name}')" style="background:rgba(76,175,80,.2);border:1px solid #4CAF50;color:#4CAF50;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:800;cursor:pointer;">Выбрать</button>
+        <button onclick="deleteCustomFont(${i})" style="background:rgba(229,57,53,.1);border:1px solid #E53935;color:#E53935;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;">✕</button>
+      </div>
+    </div>
+  `).join('');
+  // Re-inject all fonts
+  customFonts.forEach(f => injectCustomFont(f.name, f.data, f.mime));
+}
+
+function selectCustomFont(name) {
+  selectedFont = {n: name, u: null, custom: true};
+  document.getElementById('fpSelectedInfo').textContent = `Выбран: ${name} (свой)`;
+  previewFont(selectedFont);
+}
+
+function deleteCustomFont(i) {
+  customFonts.splice(i, 1);
+  localStorage.setItem('sb_custom_fonts', JSON.stringify(customFonts));
+  renderCustomFontsUI();
+  buildFontList();
+}
+
+/* ═══ FONT PANEL ═══ */
+let fontPanelOpen = false;
+const PREVIEW_TEXT = 'I love Nastysha';
+
+function buildFontList(filter) {
+  const list = document.getElementById('fpFontList');
+  const q = (filter||'').toLowerCase();
+  const groups = {};
+  FONTS_UNIQUE.forEach(f => {
+    if (q && !f.n.toLowerCase().includes(q) && !f.cat.toLowerCase().includes(q)) return;
+    if (!groups[f.cat]) groups[f.cat] = [];
+    groups[f.cat].push(f);
+  });
+  list.innerHTML = '';
+  Object.entries(groups).forEach(([cat, fonts]) => {
+    const label = document.createElement('div');
+    label.className = 'fp-section-label';
+    label.textContent = cat;
+    list.appendChild(label);
+    fonts.forEach(f => {
+      loadGoogleFont(f);
+      const item = document.createElement('div');
+      item.className = 'fp-font-item' + (selectedFont && selectedFont.n === f.n ? ' selected' : '');
+      item.onclick = () => chooseFontItem(f, item);
+      item.innerHTML = `
+        <div class="fp-font-preview" style="font-family:'${f.n}',sans-serif;">${PREVIEW_TEXT}</div>
+        <div class="fp-font-name">${f.n}</div>
+      `;
+      list.appendChild(item);
+    });
+  });
+}
+
+function filterFontPanel(q) { buildFontList(q); }
+
+function loadGoogleFont(f) {
+  if (loadedFonts.has(f.n)) return;
+  loadedFonts.add(f.n);
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${f.u}&display=swap`;
+  document.head.appendChild(link);
+}
+
+function chooseFontItem(f, el) {
+  selectedFont = f;
+  document.querySelectorAll('.fp-font-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('fpSelectedInfo').textContent = `Выбран: ${f.n}`;
+  previewFont(f);
+}
+
+function previewFont(f) {
+  if (!f.custom) loadGoogleFont(f);
+  let el = document.getElementById('sb-font-preview');
+  if (!el) { el = document.createElement('style'); el.id = 'sb-font-preview'; document.head.appendChild(el); }
+  const varMap = {title:'--ff', body:'--fb', accent:'--fb2'};
+  el.textContent = `:root { ${varMap[fontTarget]}: '${f.n}', sans-serif; }`;
+}
+
+function setFontTarget(type, btn) {
+  fontTarget = type;
+  document.querySelectorAll('.fp-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (selectedFont) previewFont(selectedFont);
+}
+
+function applyFontChoice() {
+  if (!selectedFont) { showToast('❌ Выбери шрифт!'); return; }
+  if (!selectedFont.custom) loadGoogleFont(selectedFont);
+  const saved = JSON.parse(localStorage.getItem('sb_fonts') || '{"title":"Fredoka One","body":"Nunito","accent":"Bubblegum Sans"}');
+  saved[fontTarget] = selectedFont.n;
+  if (!selectedFont.custom) saved[fontTarget+'_url'] = selectedFont.u;
+  localStorage.setItem('sb_fonts', JSON.stringify(saved));
+  // Build CSS
+  const titleUrl = saved.title_url || 'Fredoka+One';
+  const bodyUrl = saved.body_url || 'Nunito:wght@800';
+  const accentUrl = saved.accent_url || 'Bubblegum+Sans';
+  let css = '';
+  // Only import Google fonts, not custom ones
+  const imports = [];
+  if (!saved.title_custom) imports.push(`family=${titleUrl}`);
+  if (!saved.body_custom) imports.push(`family=${bodyUrl}`);
+  if (!saved.accent_custom) imports.push(`family=${accentUrl}`);
+  if (imports.length) css += `@import url('https://fonts.googleapis.com/css2?${imports.join('&')}&display=swap');\n`;
+  css += `:root { --ff:'${saved.title}',cursive; --fb:'${saved.body}',sans-serif; --fb2:'${saved.accent}',cursive; }`;
+  localStorage.setItem('sb_custom_css', css);
+  let el = document.getElementById('sb-admin-overrides');
+  if (!el) { el = document.createElement('style'); el.id='sb-admin-overrides'; document.head.appendChild(el); }
+  const colorCss = localStorage.getItem('sb_colors_css') || '';
+  el.textContent = css + '\n' + colorCss;
+  showToast(`✍️ Шрифт «${selectedFont.n}» применён!`);
+}
+
+function toggleFontPanel() {
+  fontPanelOpen = !fontPanelOpen;
+  document.getElementById('fontPickerPanel').classList.toggle('open', fontPanelOpen);
+}
+
+/* ═══ TG ═══ */
+function applyTgLinks() {
+  const tg = JSON.parse(localStorage.getItem('sb_tg') || 'null');
+  if (tg) {
+    if (tg.channel) {
+      document.getElementById('navTgLink').href = tg.channel;
+      document.getElementById('fabTgLink').href = tg.channel;
+      const mbl = document.getElementById('mobileNavTg');
+      if (mbl) mbl.href = tg.channel;
+    }
+    if (tg.buy) {
+      const href = tg.buy.startsWith('http') ? tg.buy : 'https://t.me/'+tg.buy.replace('@','');
+      document.getElementById('modalTgBuyLink').href = href;
+      document.getElementById('modalTgBuyText').textContent = tg.buy;
+    }
+  }
+}
+
+/* ═══ TOAST ═══ */
+function showToast(msg) {
+  const t = document.getElementById('editSaveToast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ═══ PRELOADER ═══ */
+window.addEventListener('load', () => {
+  setTimeout(() => document.getElementById('preloader').classList.add('hidden'), 2200);
+});
+
+/* ═══ NAV SCROLL ═══ */
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 60);
+}, {passive: true});
+
+/* ═══ SCROLL ANIMATIONS ═══ */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, {threshold:.1});
+document.querySelectorAll('.about-card,.habitat-item,.care-step,.morph-card,.fact-card,.taxonomy-block,.ifile-card').forEach(el => observer.observe(el));
+
+/* ═══ COPY PROTECTION ═══ */
+document.addEventListener('contextmenu', e => { if(!isEditMode) e.preventDefault(); });
+document.addEventListener('keydown', e => {
+  if (isEditMode) return;
+  const b = (e.ctrlKey||e.metaKey) && ['c','x','u','a','s','p'].includes(e.key.toLowerCase())
+         || e.key==='F12'
+         || (e.ctrlKey&&e.shiftKey&&['i','j','c'].includes(e.key.toLowerCase()));
+  if (b) { e.preventDefault(); e.stopPropagation(); return false; }
+}, {passive: false});
+document.addEventListener('selectstart', e => { if(!isEditMode) e.preventDefault(); });
+document.addEventListener('dragstart', e => { if(!isEditMode) e.preventDefault(); });
+document.addEventListener('copy', e => {
+  if (!isEditMode) { e.clipboardData.setData('text/plain','© shelby-book'); e.preventDefault(); }
+});
+
+/* ═══ MODAL ═══ */
+function openColoringModal() {
+  document.getElementById('coloringModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeColoringModal() {
+  document.getElementById('coloringModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+function selectColoring(el) {
+  document.querySelectorAll('.coloring-thumb').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+}
+document.getElementById('coloringModal').addEventListener('click', function(e) {
+  if (e.target === this) closeColoringModal();
+});
+</script>
+</body>
+</html>

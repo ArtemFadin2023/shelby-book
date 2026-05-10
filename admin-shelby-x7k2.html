@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#0d1f0e"/>
+<title>Shelby Admin — v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+body{
+  background:#0d1f0e;font-family:'Nunito',sans-serif;color:#e0ffe2;
+  min-height:100vh;min-height:100dvh;overflow-x:hidden;
+  -webkit-tap-highlight-color:transparent;overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+}
+a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+:root{
+  --g1:#1B5E20;--g2:#2E7D32;--g3:#4CAF50;--gpale:#C8E6C9;
+  --yellow:#FDD835;--orange:#FF7043;--red:#E53935;--blue:#229ED9;
+  --bg:#0d1f0e;--card:#162618;--card2:#1a2e1b;
+  --border:rgba(76,175,80,0.22);--border2:rgba(76,175,80,0.4);
+  --ff:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--r:14px;
+  --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);
+  --sidebar-w:240px;--topbar-h:56px;
+}
+@media(pointer:fine){::-webkit-scrollbar{width:6px;height:6px;}::-webkit-scrollbar-track{background:rgba(255,255,255,0.03);}::-webkit-scrollbar-thumb{background:rgba(76,175,80,0.35);border-radius:3px;}::-webkit-scrollbar-thumb:hover{background:rgba(76,175,80,0.55);}}
+
+/* ═══ LOGIN ═══ */
+#loginScreen{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,#1a4a1d 0%,#0d1f0e 70%);padding:20px;padding-top:calc(20px + var(--safe-top));padding-bottom:calc(20px + var(--safe-bottom));}
+.login-box{background:var(--card);border:2px solid var(--border2);border-radius:24px;padding:44px 40px;max-width:400px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,0.5);text-align:center;}
+.login-logo{font-family:var(--ff);font-size:36px;margin-bottom:6px;color:#e0ffe2;}
+.login-logo span{color:var(--yellow);}
+.login-sub{font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:32px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;}
+.login-field{margin-bottom:18px;text-align:left;}
+.login-field label{display:block;font-size:11px;font-weight:800;color:#81C784;letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px;}
+.login-field input{width:100%;padding:13px 16px;border-radius:10px;background:rgba(255,255,255,0.06);border:2px solid var(--border);color:#e0ffe2;font-family:var(--fb);font-size:15px;font-weight:700;outline:none;transition:border-color .2s;}
+.login-field input:focus{border-color:var(--g3);}
+.btn-login{width:100%;padding:14px;border-radius:10px;background:var(--g2);border:2px solid var(--g1);color:#fff;font-family:var(--ff);font-size:18px;cursor:pointer;transition:all .2s;box-shadow:0 4px 0 var(--g1);min-height:52px;}
+.btn-login:hover{transform:translateY(2px);box-shadow:0 2px 0 var(--g1);}
+.btn-login:active{transform:translateY(4px);box-shadow:none;}
+.login-error{color:var(--orange);font-size:13px;font-weight:700;margin-top:14px;display:none;}
+.login-hint{font-size:11px;color:rgba(255,255,255,0.25);margin-top:16px;font-weight:600;}
+
+/* ═══ ADMIN APP ═══ */
+#adminApp{display:none;}
+
+/* ═══ TOPBAR ═══ */
+.adm-topbar{background:linear-gradient(90deg,#0d1f0e,#162618);border-bottom:2px solid var(--border2);padding:0 20px;padding-left:calc(20px + var(--safe-left));padding-right:calc(20px + var(--safe-right));height:var(--topbar-h);display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:300;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.adm-logo{font-family:var(--ff);font-size:20px;color:#e0ffe2;white-space:nowrap;flex-shrink:0;}
+.adm-logo span{color:var(--yellow);}
+.adm-badge{background:var(--g3);color:#fff;font-size:9px;font-weight:800;padding:2px 9px;border-radius:99px;letter-spacing:.1em;white-space:nowrap;flex-shrink:0;}
+.adm-topbar-sep{width:1px;height:24px;background:var(--border);margin:0 4px;flex-shrink:0;}
+.adm-topbar-btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--fb);font-size:12px;font-weight:800;padding:8px 14px;border-radius:9px;border:2px solid;cursor:pointer;transition:all .18s;white-space:nowrap;flex-shrink:0;min-height:38px;text-decoration:none;}
+.adm-topbar-btn.edit{background:#1565C0;border-color:#0d47a1;color:#fff;box-shadow:0 3px 0 #0d47a1;}
+.adm-topbar-btn.edit:hover{transform:translateY(2px);box-shadow:0 1px 0 #0d47a1;background:#1976D2;}
+.adm-topbar-btn.view{background:rgba(76,175,80,.1);border-color:var(--border2);color:rgba(255,255,255,.6);}
+.adm-topbar-btn.view:hover{background:rgba(76,175,80,.2);color:#fff;}
+.adm-topbar-btn.save-all{background:var(--g2);border-color:var(--g1);color:#fff;box-shadow:0 3px 0 var(--g1);}
+.adm-topbar-btn.save-all:hover{transform:translateY(2px);box-shadow:0 1px 0 var(--g1);}
+.adm-topbar-btn.logout{background:transparent;border-color:rgba(229,57,53,.3);color:rgba(229,57,53,.7);margin-left:auto;}
+.adm-topbar-btn.logout:hover{background:var(--red);border-color:var(--red);color:#fff;}
+.adm-hamburger{display:none;flex-direction:column;gap:5px;padding:8px;background:none;border:none;cursor:pointer;flex-shrink:0;}
+.adm-hamburger span{display:block;width:22px;height:2.5px;background:#81C784;border-radius:2px;transition:all .3s;}
+.adm-hamburger.open span:nth-child(1){transform:translateY(7.5px) rotate(45deg);}
+.adm-hamburger.open span:nth-child(2){opacity:0;}
+.adm-hamburger.open span:nth-child(3){transform:translateY(-7.5px) rotate(-45deg);}
+
+/* ═══ LAYOUT ═══ */
+.adm-layout{display:flex;min-height:calc(100vh - var(--topbar-h));min-height:calc(100dvh - var(--topbar-h));}
+
+/* ═══ SIDEBAR ═══ */
+.adm-sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--card);border-right:2px solid var(--border);padding:16px 10px;overflow-y:auto;position:sticky;top:var(--topbar-h);height:calc(100vh - var(--topbar-h));height:calc(100dvh - var(--topbar-h));-webkit-overflow-scrolling:touch;}
+.adm-nav-item{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;color:rgba(255,255,255,.5);transition:all .2s;margin-bottom:3px;}
+.adm-nav-item:hover{background:rgba(76,175,80,.1);color:#fff;}
+.adm-nav-item.active{background:var(--g2);color:#fff;}
+.adm-nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0;}
+.sidebar-sep{height:1px;background:var(--border);margin:10px 5px;}
+.sidebar-label{font-size:9.5px;font-weight:800;color:rgba(255,255,255,.2);letter-spacing:.1em;text-transform:uppercase;padding:4px 12px 6px;}
+.adm-sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;backdrop-filter:blur(4px);}
+.adm-sidebar-overlay.open{display:block;}
+.adm-sidebar.mobile-open{z-index:250;}
+
+/* ═══ MAIN ═══ */
+.adm-main{flex:1;padding:24px;overflow-y:auto;padding-bottom:calc(24px + var(--safe-bottom));max-width:100%;}
+.adm-panel{display:none;}
+.adm-panel.active{display:block;}
+.adm-section-title{font-family:var(--ff);font-size:26px;color:#e0ffe2;margin-bottom:4px;}
+.adm-section-sub{font-size:13px;color:rgba(255,255,255,.35);margin-bottom:22px;font-weight:600;}
+
+/* ═══ CARDS ═══ */
+.adm-card{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:18px;}
+.adm-card h3{font-family:var(--ff);font-size:17px;color:#81C784;margin-bottom:14px;}
+.adm-card h3.yellow{color:var(--yellow);}
+.adm-card h3.blue{color:#64B5F6;}
+.adm-card h3.orange{color:var(--orange);}
+
+/* ═══ FIELDS ═══ */
+.adm-field{margin-bottom:14px;}
+.adm-field label{display:block;font-size:11px;font-weight:800;color:#81C784;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+.adm-field input,.adm-field textarea,.adm-field select{width:100%;padding:10px 13px;background:rgba(255,255,255,.05);border:2px solid var(--border);border-radius:8px;color:#e0ffe2;font-family:var(--fb);font-size:13px;font-weight:600;outline:none;transition:border-color .2s;resize:vertical;-webkit-appearance:none;appearance:none;}
+.adm-field input:focus,.adm-field textarea:focus,.adm-field select:focus{border-color:var(--g3);}
+.adm-field textarea{min-height:72px;}
+.adm-field select option{background:#162618;}
+.adm-field input[type="date"]{color-scheme:dark;}
+
+/* ═══ BUTTONS ═══ */
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:var(--ff);font-size:14px;padding:10px 20px;border-radius:9px;border:2px solid;cursor:pointer;transition:all .18s;white-space:nowrap;min-height:42px;text-decoration:none;}
+.btn-green{background:var(--g2);border-color:var(--g1);color:#fff;box-shadow:0 3px 0 var(--g1);}
+.btn-green:hover{transform:translateY(2px);box-shadow:0 1px 0 var(--g1);}
+.btn-green:active{transform:translateY(3px);box-shadow:none;}
+.btn-blue{background:#1565C0;border-color:#0d47a1;color:#fff;box-shadow:0 3px 0 #0d47a1;}
+.btn-blue:hover{transform:translateY(2px);box-shadow:0 1px 0 #0d47a1;}
+.btn-orange{background:#E64A19;border-color:#bf360c;color:#fff;box-shadow:0 3px 0 #bf360c;}
+.btn-orange:hover{transform:translateY(2px);box-shadow:0 1px 0 #bf360c;}
+.btn-yellow{background:var(--yellow);border-color:#e6b800;color:#0d1f0e;box-shadow:0 3px 0 #e6b800;}
+.btn-yellow:hover{transform:translateY(2px);box-shadow:0 1px 0 #e6b800;}
+.btn-danger{background:transparent;border-color:rgba(229,57,53,.45);color:var(--red);}
+.btn-danger:hover{background:var(--red);border-color:var(--red);color:#fff;}
+.btn-ghost{background:transparent;border-color:var(--border2);color:rgba(255,255,255,.55);}
+.btn-ghost:hover{background:rgba(255,255,255,.07);color:#fff;}
+.btn-sm{font-size:11px;padding:5px 12px;min-height:30px;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px;}
+
+/* ═══ GRID ═══ */
+.adm-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.adm-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:600px){.adm-grid-2,.adm-grid-3{grid-template-columns:1fr;}}
+
+/* ═══ STATS ═══ */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
+.stat-card{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:16px 14px;text-align:center;}
+.stat-num{font-family:var(--ff);font-size:28px;color:var(--g3);}
+.stat-label{font-size:10px;color:rgba(255,255,255,.35);font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-top:4px;}
+@media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+
+/* ═══ ITEM CARDS ═══ */
+.item-card{background:rgba(255,255,255,.04);border:2px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;}
+.item-card-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.item-card-num{font-family:var(--ff);font-size:12px;color:var(--g3);background:rgba(76,175,80,.15);padding:2px 10px;border-radius:99px;}
+.item-card-del{margin-left:auto;background:transparent;border:2px solid rgba(229,57,53,.3);color:rgba(229,57,53,.6);font-size:11px;font-weight:800;padding:4px 10px;border-radius:6px;cursor:pointer;transition:all .2s;min-height:28px;}
+.item-card-del:hover{background:var(--red);border-color:var(--red);color:#fff;}
+
+/* ═══ LECTURE / BOARDING EDITOR ═══ */
+.lecture-card{background:rgba(255,255,255,.04);border:2px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;position:relative;}
+.lecture-card-header{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.lecture-badge{font-family:var(--ff);font-size:11px;padding:3px 12px;border-radius:99px;}
+.badge-lecture{background:rgba(34,158,217,.2);color:#64B5F6;border:1px solid rgba(34,158,217,.3);}
+.badge-boarding{background:rgba(253,216,53,.15);color:var(--yellow);border:1px solid rgba(253,216,53,.25);}
+
+/* Date Slots */
+.date-slots-wrap{margin-top:10px;}
+.date-slots-title{font-size:11px;font-weight:800;color:#81C784;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;}
+.date-slots-list{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;}
+.date-slot-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:700;transition:all .2s;}
+.date-slot-tag.free{background:rgba(76,175,80,.2);border:1.5px solid rgba(76,175,80,.5);color:#81C784;}
+.date-slot-tag.booked{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);color:rgba(255,255,255,.35);text-decoration:line-through;}
+.date-slot-del{background:none;border:none;color:rgba(229,57,53,.6);cursor:pointer;font-size:13px;padding:0;line-height:1;transition:color .2s;}
+.date-slot-del:hover{color:var(--red);}
+.date-slot-tag.booked .date-slot-del{color:rgba(255,255,255,.2);}
+.date-slot-tag.booked .date-slot-del:hover{color:var(--red);}
+.toggle-booked-btn{background:transparent;border:1.5px solid rgba(255,255,255,.15);color:rgba(255,255,255,.35);font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;cursor:pointer;transition:all .2s;}
+.toggle-booked-btn:hover{border-color:var(--g3);color:var(--g3);}
+
+.add-date-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+.add-date-row input[type="date"]{flex:1;padding:8px 12px;background:rgba(255,255,255,.05);border:2px solid var(--border);border-radius:8px;color:#e0ffe2;font-family:var(--fb);font-size:12px;font-weight:600;outline:none;color-scheme:dark;}
+.add-date-row input[type="date"]:focus{border-color:var(--g3);}
+
+/* ═══ UPLOAD AREA ═══ */
+.upload-area{border:3px dashed var(--border);border-radius:12px;padding:30px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:rgba(76,175,80,.03);}
+.upload-area:hover,.upload-area.drag{border-color:var(--g3);background:rgba(76,175,80,.08);}
+.upload-area-icon{font-size:32px;margin-bottom:8px;}
+.upload-area p{font-size:13px;color:rgba(255,255,255,.45);font-weight:700;line-height:1.5;}
+.upload-area span{color:var(--g3);}
+
+/* ═══ PHOTO SLOT ═══ */
+.photo-slot{position:relative;border:2px dashed var(--border);border-radius:10px;overflow:hidden;background:rgba(255,255,255,.03);min-height:90px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;cursor:pointer;transition:border-color .2s;}
+.photo-slot:hover{border-color:var(--g3);}
+.photo-slot img{width:100%;height:100%;object-fit:cover;display:block;border-radius:8px;}
+.photo-slot-label{font-size:11px;font-weight:800;color:rgba(255,255,255,.35);}
+.photo-slot-icon{font-size:22px;}
+.photo-slot-remove{position:absolute;top:6px;right:6px;background:rgba(229,57,53,.85);border:none;color:#fff;width:22px;height:22px;border-radius:50%;font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center;}
+.photo-slot:hover .photo-slot-remove{display:flex;}
+
+/* ═══ FILE ITEMS ═══ */
+.file-item{display:flex;align-items:center;gap:10px;padding:11px 13px;background:rgba(255,255,255,.03);border:2px solid var(--border);border-radius:10px;margin-bottom:7px;}
+.file-item-icon{font-size:22px;flex-shrink:0;}
+.file-item-info{flex:1;min-width:0;}
+.file-item-name{font-size:13px;font-weight:700;color:#e0ffe2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-item-meta{font-size:11px;color:rgba(255,255,255,.35);font-weight:600;margin-top:2px;}
+.file-item-actions{display:flex;gap:6px;flex-shrink:0;}
+.file-item-desc-input{width:100%;padding:5px 9px;font-size:11px;font-weight:600;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;color:#e0ffe2;font-family:var(--fb);outline:none;transition:border-color .2s;margin-top:5px;}
+.file-item-desc-input:focus{border-color:var(--g3);}
+
+/* ═══ MORPH EDITOR ═══ */
+.morph-editor-card{background:rgba(255,255,255,.04);border:2px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+.morph-color-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.morph-swatch-preview{width:44px;height:44px;border-radius:9px;border:2px solid var(--border);transition:background .2s;flex-shrink:0;}
+
+/* ═══ EDIT MODE CARD ═══ */
+.edit-mode-card{border:2px solid rgba(253,216,53,.5);background:linear-gradient(135deg,rgba(21,101,192,.15),rgba(13,31,14,.8));}
+.edit-mode-features{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:18px;}
+.edit-feature{background:rgba(255,255,255,.05);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:8px;}
+.edit-feature-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.edit-feature-title{font-size:13px;font-weight:800;color:#e0ffe2;margin-bottom:2px;}
+.edit-feature-desc{font-size:11px;color:rgba(255,255,255,.4);line-height:1.5;}
+
+/* ═══ COLOR GRID ═══ */
+.color-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:14px;}
+.color-item{background:rgba(255,255,255,.04);border:2px solid var(--border);border-radius:10px;padding:12px;}
+.color-item label{display:block;font-size:10px;font-weight:800;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px;}
+.color-picker-row{display:flex;align-items:center;gap:8px;}
+.color-picker-row input[type="color"]{width:40px;height:34px;border-radius:7px;border:2px solid var(--border);background:transparent;cursor:pointer;padding:2px;-webkit-appearance:none;appearance:none;}
+.color-value{font-family:monospace;font-size:12px;color:var(--g3);font-weight:700;}
+.color-preview-bar{height:6px;border-radius:3px;margin-top:7px;transition:background .2s;}
+
+/* ═══ COLORING ITEM ═══ */
+.coloring-item{display:flex;align-items:center;gap:10px;padding:11px 13px;background:rgba(255,255,255,.03);border:2px solid var(--border);border-radius:10px;margin-bottom:7px;}
+.coloring-item svg{width:56px;height:40px;border-radius:6px;background:#fff;flex-shrink:0;}
+.coloring-item-info{flex:1;}
+.coloring-item-name{font-size:13px;font-weight:700;color:#e0ffe2;}
+.coloring-item-desc{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;}
+
+/* ═══ FONT STUFF ═══ */
+.font-selector-wrap{position:relative;}
+.font-current{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);border:2px solid var(--border);border-radius:8px;padding:10px 13px;cursor:pointer;transition:border-color .2s;}
+.font-current:hover{border-color:var(--g3);}
+.font-current-name{font-size:13px;font-weight:700;color:#e0ffe2;flex:1;}
+.font-current-preview{font-size:17px;color:var(--g3);}
+.font-dropdown{position:absolute;top:calc(100% + 5px);left:0;right:0;background:#132214;border:2px solid var(--g3);border-radius:12px;z-index:500;box-shadow:0 12px 40px rgba(0,0,0,.6);overflow:hidden;}
+.font-search{width:100%;padding:10px 13px;background:rgba(255,255,255,.05);border:none;border-bottom:2px solid var(--border);color:#e0ffe2;font-size:13px;font-weight:600;outline:none;}
+.font-list{max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.font-item{padding:11px 13px;cursor:pointer;border-bottom:1px solid rgba(76,175,80,.08);display:flex;align-items:center;gap:10px;transition:background .15s;}
+.font-item:hover{background:rgba(76,175,80,.1);}
+.font-item.selected{background:rgba(76,175,80,.18);}
+.font-item-sample{font-size:18px;color:var(--g3);min-width:70px;}
+.font-item-name{font-size:11px;font-weight:800;color:rgba(255,255,255,.4);font-family:var(--fb)!important;}
+.custom-font-wrap{border:2px dashed var(--border2);border-radius:10px;padding:16px;margin-bottom:14px;background:rgba(76,175,80,.04);}
+.custom-font-wrap h4{font-family:var(--ff);font-size:14px;color:#81C784;margin-bottom:10px;}
+.custom-font-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;}
+.custom-font-item-name{font-size:12px;font-weight:800;color:#e0ffe2;flex:1;}
+
+/* ═══ SECTION BADGE ═══ */
+.section-badge{display:inline-block;font-size:11px;font-weight:800;padding:3px 12px;border-radius:99px;letter-spacing:.07em;margin-bottom:6px;}
+.badge-green{background:rgba(76,175,80,.2);color:#81C784;border:1px solid rgba(76,175,80,.3);}
+.badge-yellow{background:rgba(253,216,53,.15);color:var(--yellow);border:1px solid rgba(253,216,53,.25);}
+.badge-blue{background:rgba(34,158,217,.15);color:#64B5F6;border:1px solid rgba(34,158,217,.25);}
+.badge-orange{background:rgba(255,112,67,.15);color:var(--orange);border:1px solid rgba(255,112,67,.25);}
+
+/* ═══ TOAST ═══ */
+#toast{position:fixed;bottom:calc(24px + var(--safe-bottom));right:24px;background:var(--g2);border:2px solid var(--g3);color:#fff;font-family:var(--ff);font-size:15px;padding:12px 22px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:9999;opacity:0;transform:translateY(20px);transition:all .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;max-width:calc(100vw - 48px);}
+#toast.show{opacity:1;transform:translateY(0);}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:860px){
+  .adm-sidebar{position:fixed;left:-100%;top:var(--topbar-h);height:calc(100vh - var(--topbar-h));z-index:250;transition:left .3s ease;padding-bottom:calc(16px + var(--safe-bottom));}
+  .adm-sidebar.mobile-open{left:0;}
+  .adm-hamburger{display:flex;}
+  .adm-topbar-btn.logout{margin-left:0;}
+  .adm-topbar-sep.hide-mobile{display:none;}
+  .adm-main{padding:16px;padding-bottom:calc(16px + var(--safe-bottom));}
+  .adm-card{padding:16px;}
+}
+@media(max-width:480px){
+  .adm-topbar{gap:6px;padding:0 12px;padding-right:calc(12px + var(--safe-right));}
+  .adm-logo{font-size:17px;}
+  .adm-topbar-btn{font-size:11px;padding:7px 10px;}
+  .color-grid{grid-template-columns:1fr 1fr;}
+  .edit-mode-features{grid-template-columns:1fr;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🦎 shelby<span>-book</span></div>
+    <p class="login-sub">Панель администратора v3</p>
+    <div class="login-field">
+      <label>Логин</label>
+      <input type="text" id="loginUser" placeholder="admin" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"/>
+    </div>
+    <div class="login-field">
+      <label>Пароль</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="btn-login" onclick="doLogin()">🔐 Войти</button>
+    <p class="login-error" id="loginError">Неверный логин или пароль</p>
+    <p class="login-hint">По умолчанию: shelby / agama2026</p>
+  </div>
+</div>
+
+<!-- ═══ ADMIN APP ═══ -->
+<div id="adminApp">
+  <div class="adm-topbar">
+    <button class="adm-hamburger" id="admHamburger" onclick="toggleSidebar()" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="adm-logo">🦎 shelby<span>-book</span></div>
+    <div class="adm-badge">ADMIN v3</div>
+    <div class="adm-topbar-sep hide-mobile"></div>
+    <button class="adm-topbar-btn edit" onclick="openEditMode()">✏️ Редактировать сайт</button>
+    <button class="adm-topbar-btn view" onclick="openSite()">🌐 Просмотр</button>
+    <div class="adm-topbar-sep hide-mobile"></div>
+    <button class="adm-topbar-btn save-all" onclick="saveAllSections()">💾 Сохранить всё</button>
+    <button class="adm-topbar-btn logout" onclick="doLogout()">Выйти →</button>
+  </div>
+
+  <div class="adm-layout">
+    <div class="adm-sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <nav class="adm-sidebar" id="admSidebar">
+      <div class="sidebar-label">Обзор</div>
+      <div class="adm-nav-item active" onclick="showPanel('dashboard',this)"><span class="adm-nav-icon">📊</span> Дашборд</div>
+
+      <div class="sidebar-sep"></div>
+      <div class="sidebar-label">Редактор</div>
+      <div class="adm-nav-item" onclick="showPanel('editmode',this)"><span class="adm-nav-icon">✏️</span> Режим правки</div>
+
+      <div class="sidebar-sep"></div>
+      <div class="sidebar-label">Контент</div>
+      <div class="adm-nav-item" onclick="showPanel('hero',this)"><span class="adm-nav-icon">🚀</span> Hero</div>
+      <div class="adm-nav-item" onclick="showPanel('about',this)"><span class="adm-nav-icon">🔬</span> О виде</div>
+      <div class="adm-nav-item" onclick="showPanel('habitat',this)"><span class="adm-nav-icon">🌍</span> Среда</div>
+      <div class="adm-nav-item" onclick="showPanel('care',this)"><span class="adm-nav-icon">🏠</span> Уход</div>
+      <div class="adm-nav-item" onclick="showPanel('gallery',this)"><span class="adm-nav-icon">🎨</span> Галерея / Морфы</div>
+      <div class="adm-nav-item" onclick="showPanel('facts',this)"><span class="adm-nav-icon">⚡</span> Факты</div>
+      <div class="adm-nav-item" onclick="showPanel('footer',this)"><span class="adm-nav-icon">🦶</span> Подвал</div>
+
+      <div class="sidebar-sep"></div>
+      <div class="sidebar-label">🆕 Услуги</div>
+      <div class="adm-nav-item" onclick="showPanel('lectures',this)"><span class="adm-nav-icon">📚</span> Лекции</div>
+      <div class="adm-nav-item" onclick="showPanel('boarding',this)"><span class="adm-nav-icon">🏡</span> Передержка</div>
+
+      <div class="sidebar-sep"></div>
+      <div class="sidebar-label">Дизайн</div>
+      <div class="adm-nav-item" onclick="showPanel('fonts',this)"><span class="adm-nav-icon">✍️</span> Шрифты</div>
+      <div class="adm-nav-item" onclick="showPanel('colors',this)"><span class="adm-nav-icon">🎨</span> Цвета / Фоны</div>
+
+      <div class="sidebar-sep"></div>
+      <div class="sidebar-label">Прочее</div>
+      <div class="adm-nav-item" onclick="showPanel('colorings',this)"><span class="adm-nav-icon">🖼️</span> Раскраски</div>
+      <div class="adm-nav-item" onclick="showPanel('files',this)"><span class="adm-nav-icon">📁</span> Файлы</div>
+      <div class="adm-nav-item" onclick="showPanel('tg',this)"><span class="adm-nav-icon">✈️</span> Telegram</div>
+      <div class="adm-nav-item" onclick="showPanel('settings',this)"><span class="adm-nav-icon">⚙️</span> Настройки</div>
+    </nav>
+
+    <main class="adm-main">
+
+      <!-- ════ DASHBOARD ════ -->
+      <div class="adm-panel active" id="panel-dashboard">
+        <div class="adm-section-title">📊 Дашборд</div>
+        <div class="adm-section-sub">Полный редактор shelby-book — v3</div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-num">8</div><div class="stat-label">Разделов</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-files">0</div><div class="stat-label">Файлов</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-morphs">6</div><div class="stat-label">Морфов</div></div>
+          <div class="stat-card"><div class="stat-num">💚</div><div class="stat-label">Онлайн</div></div>
+        </div>
+        <div class="adm-card">
+          <h3>⚡ Быстрые действия</h3>
+          <div class="btn-row">
+            <button class="btn btn-green" onclick="openEditMode()">✏️ Редактировать сайт</button>
+            <button class="btn btn-blue" onclick="showPanel('lectures',document.querySelectorAll('.adm-nav-item')[13])">📚 Лекции</button>
+            <button class="btn btn-yellow" onclick="showPanel('boarding',document.querySelectorAll('.adm-nav-item')[14])">🏡 Передержка</button>
+            <button class="btn btn-ghost" onclick="showPanel('files',document.querySelectorAll('.adm-nav-item')[18])">📁 Файлы</button>
+          </div>
+        </div>
+        <div class="adm-card">
+          <h3>🆕 Что нового в v3</h3>
+          <ul style="font-size:13px;color:rgba(255,255,255,.55);line-height:2;padding-left:18px;">
+            <li>✅ <strong style="color:#81C784">Раздел «Лекции»</strong> — фото, описание, свободные даты</li>
+            <li>✅ <strong style="color:#81C784">Раздел «Передержка»</strong> — фото, описание, управление датами</li>
+            <li>✅ Даты помечаются серыми при <strong style="color:#81C784">бронировании</strong></li>
+            <li>✅ Раздел <strong style="color:#81C784">«Файлы»</strong> — файлы видны на сайте</li>
+            <li>✅ Фото в морфах и среде обитания</li>
+            <li>✅ Оптимизация под <strong style="color:#81C784">Mac · iPhone · Android</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ════ EDIT MODE ════ -->
+      <div class="adm-panel" id="panel-editmode">
+        <div class="adm-section-title">✏️ Режим правки сайта</div>
+        <div class="adm-section-sub">Открывает сайт с панелью инлайн-редактирования</div>
+        <div class="adm-card edit-mode-card">
+          <h3 class="yellow">🚀 Запустить редактор</h3>
+          <div class="btn-row" style="margin-top:0;">
+            <button class="btn btn-blue" onclick="openEditMode()" style="font-size:16px;padding:13px 28px;">✏️ Открыть редактор сайта</button>
+            <button class="btn btn-ghost" onclick="openSite()">🌐 Просмотр без правки</button>
+          </div>
+        </div>
+        <div class="adm-card">
+          <h3>💾 Управление данными</h3>
+          <div class="btn-row">
+            <button class="btn btn-danger btn-sm" onclick="confirmResetInline()">🗑️ Сбросить все правки сайта</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ HERO ════ -->
+      <div class="adm-panel" id="panel-hero">
+        <div class="adm-section-title">🚀 Hero</div>
+        <div class="adm-section-sub">Главный экран — заголовки, описание, фото</div>
+        <div class="adm-card" style="border-color:rgba(253,216,53,.4);">
+          <h3 class="yellow">🖼️ Главная фотография</h3>
+          <div id="heroImgPreviewWrap" style="display:none;margin-bottom:14px;">
+            <div style="position:relative;display:inline-block;">
+              <img id="heroImgPreview" src="" alt="" style="max-width:260px;max-height:180px;border-radius:10px;border:2px solid var(--g3);object-fit:cover;display:block;"/>
+              <button onclick="removeHeroImage()" style="position:absolute;top:-8px;right:-8px;background:var(--red);border:none;color:#fff;width:24px;height:24px;border-radius:50%;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+            </div>
+          </div>
+          <div class="upload-area" onclick="document.getElementById('heroImgInput').click()">
+            <div class="upload-area-icon">📸</div>
+            <p>Нажми или перетащи фото<br/><span>JPG, PNG, WEBP до 5MB</span></p>
+          </div>
+          <input type="file" id="heroImgInput" accept="image/*" style="display:none" onchange="handleHeroImageUpload(this)"/>
+        </div>
+        <div class="adm-card">
+          <h3>📝 Тексты</h3>
+          <div class="adm-grid-2">
+            <div class="adm-field"><label>Бейдж</label><input type="text" id="c-hero-badge"/></div>
+            <div class="adm-field"><label>Заголовок строка 1</label><input type="text" id="c-hero-t1"/></div>
+            <div class="adm-field"><label>Заголовок строка 2 (зелёная)</label><input type="text" id="c-hero-t2"/></div>
+            <div class="adm-field"><label>Текст кнопки</label><input type="text" id="c-hero-cta"/></div>
+          </div>
+          <div class="adm-field"><label>Описание</label><textarea id="c-hero-desc"></textarea></div>
+          <button class="btn btn-green" onclick="saveSection('hero')">💾 Сохранить Hero</button>
+        </div>
+      </div>
+
+      <!-- ════ ABOUT ════ -->
+      <div class="adm-panel" id="panel-about">
+        <div class="adm-section-title">🔬 О виде</div>
+        <div class="adm-section-sub">Карточки, систематика, цитата</div>
+        <div class="adm-card">
+          <h3>🃏 Карточки «О виде»</h3>
+          <div id="aboutCardsList"></div>
+          <button class="btn btn-green btn-sm" style="margin-top:6px;" onclick="addAboutCard()">➕ Добавить карточку</button>
+        </div>
+        <div class="adm-card">
+          <h3>📊 Систематика</h3>
+          <div class="adm-grid-2">
+            <div class="adm-field"><label>Царство</label><input type="text" id="tx1"/></div>
+            <div class="adm-field"><label>Класс</label><input type="text" id="tx2"/></div>
+            <div class="adm-field"><label>Отряд</label><input type="text" id="tx3"/></div>
+            <div class="adm-field"><label>Семейство</label><input type="text" id="tx4"/></div>
+            <div class="adm-field"><label>Род</label><input type="text" id="tx5"/></div>
+            <div class="adm-field"><label>Вид</label><input type="text" id="tx6"/></div>
+          </div>
+        </div>
+        <div class="adm-card">
+          <h3>💬 Цитата</h3>
+          <div class="adm-field"><textarea id="c-about-quote"></textarea></div>
+          <button class="btn btn-green" onclick="saveSection('about')">💾 Сохранить «О виде»</button>
+        </div>
+      </div>
+
+      <!-- ════ HABITAT ════ -->
+      <div class="adm-panel" id="panel-habitat">
+        <div class="adm-section-title">🌍 Среда обитания</div>
+        <div class="adm-section-sub">Карточки с фото</div>
+        <div class="adm-card">
+          <div class="adm-field"><label>Заголовок раздела (выделенная часть)</label><input type="text" id="c-hab-em"/></div>
+        </div>
+        <div class="adm-card">
+          <h3>🌿 Карточки среды</h3>
+          <div id="habitatCardsList"></div>
+          <div class="btn-row">
+            <button class="btn btn-green btn-sm" onclick="addHabitatCard()">➕ Добавить карточку</button>
+            <button class="btn btn-green" onclick="saveSection('habitat')">💾 Сохранить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ CARE ════ -->
+      <div class="adm-panel" id="panel-care">
+        <div class="adm-section-title">🏠 Уход и содержание</div>
+        <div class="adm-section-sub">Шаги ухода за агамой</div>
+        <div class="adm-card">
+          <h3>📋 Шаги ухода</h3>
+          <div id="careCardsList"></div>
+          <div class="btn-row">
+            <button class="btn btn-green btn-sm" onclick="addCareCard()">➕ Добавить шаг</button>
+            <button class="btn btn-green" onclick="saveSection('care')">💾 Сохранить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ GALLERY ════ -->
+      <div class="adm-panel" id="panel-gallery">
+        <div class="adm-section-title">🦎 Галерея / Морфы</div>
+        <div class="adm-section-sub">Карточки морфов с фото и цветом</div>
+        <div class="adm-card">
+          <div class="adm-field"><label>Заголовок галереи (выделенная часть)</label><input type="text" id="c-gal-em"/></div>
+        </div>
+        <div class="adm-card">
+          <h3>🦎 Морфы</h3>
+          <div id="morphCardsList"></div>
+          <div class="btn-row">
+            <button class="btn btn-green btn-sm" onclick="addMorphCard()">➕ Добавить морф</button>
+            <button class="btn btn-green" onclick="saveSection('gallery')">💾 Сохранить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ FACTS ════ -->
+      <div class="adm-panel" id="panel-facts">
+        <div class="adm-section-title">⚡ Факты</div>
+        <div class="adm-section-sub">Карточки с фактами</div>
+        <div class="adm-card">
+          <h3>📝 Факты</h3>
+          <div id="factsCardsList"></div>
+          <div class="btn-row">
+            <button class="btn btn-green btn-sm" onclick="addFactCard()">➕ Добавить факт</button>
+            <button class="btn btn-green" onclick="saveSection('facts')">💾 Сохранить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ FOOTER ════ -->
+      <div class="adm-panel" id="panel-footer">
+        <div class="adm-section-title">🦶 Подвал</div>
+        <div class="adm-card">
+          <div class="adm-field"><label>Tagline (слоган)</label><input type="text" id="c-footer-tagline"/></div>
+          <div class="adm-field"><label>Copyright (левый угол)</label><input type="text" id="c-footer-copy"/></div>
+          <div class="adm-field"><label>Подпись (правый угол)</label><input type="text" id="c-footer-sub"/></div>
+          <button class="btn btn-green" onclick="saveSection('footer')">💾 Сохранить подвал</button>
+        </div>
+      </div>
+
+      <!-- ════ ЛЕКЦИИ ════ -->
+      <div class="adm-panel" id="panel-lectures">
+        <div class="adm-section-title">📚 Лекции</div>
+        <div class="adm-section-sub">Добавляй лекции, фото, описание и доступные даты</div>
+
+        <div class="adm-card" style="border-color:rgba(34,158,217,.4);">
+          <h3 class="blue">📝 Общее описание раздела «Лекции»</h3>
+          <div class="adm-field"><label>Заголовок раздела</label><input type="text" id="lec-section-title" placeholder="Наши лекции об агамах 🦎"/></div>
+          <div class="adm-field"><label>Подзаголовок</label><textarea id="lec-section-desc" placeholder="Приходи на наши живые встречи и узнай всё о бородатых агамах!"></textarea></div>
+        </div>
+
+        <div class="adm-card">
+          <h3>📚 Список лекций</h3>
+          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px;">Добавляй лекции. Для каждой можно загрузить фото, написать описание и указать свободные даты. Забронированные даты выглядят серыми.</p>
+          <div id="lecturesList"></div>
+          <div class="btn-row">
+            <button class="btn btn-blue btn-sm" onclick="addLecture()">➕ Добавить лекцию</button>
+            <button class="btn btn-green" onclick="saveLectures()">💾 Сохранить лекции</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ ПЕРЕДЕРЖКА ════ -->
+      <div class="adm-panel" id="panel-boarding">
+        <div class="adm-section-title">🏡 Передержка</div>
+        <div class="adm-section-sub">Фото, описание, управление свободными датами</div>
+
+        <div class="adm-card" style="border-color:rgba(253,216,53,.4);">
+          <h3 class="yellow">📝 Общее описание раздела «Передержка»</h3>
+          <div class="adm-field"><label>Заголовок раздела</label><input type="text" id="board-section-title" placeholder="Передержка агамы 🏡"/></div>
+          <div class="adm-field"><label>Описание</label><textarea id="board-section-desc" placeholder="Уедешь в отпуск? Мы с любовью присмотрим за твоим питомцем!"></textarea></div>
+        </div>
+
+        <div class="adm-card">
+          <h3>📷 Фото передержки</h3>
+          <div class="adm-grid-2">
+            <div>
+              <div style="font-size:11px;font-weight:800;color:#81C784;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Главное фото</div>
+              <div class="photo-slot" id="boardPhoto1Slot" onclick="triggerBoardPhoto('boardPhoto1Input','boardPhoto1Slot','sb_board_photo1')">
+                <div class="photo-slot-icon">📸</div>
+                <div class="photo-slot-label">Загрузить фото</div>
+                <button class="photo-slot-remove" onclick="removeBoardPhoto(event,'boardPhoto1Slot','sb_board_photo1')">✕</button>
+              </div>
+              <input type="file" id="boardPhoto1Input" accept="image/*" style="display:none" onchange="handleBoardPhotoUpload(this,'boardPhoto1Slot','sb_board_photo1')"/>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:800;color:#81C784;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Фото 2 (дополнительное)</div>
+              <div class="photo-slot" id="boardPhoto2Slot" onclick="triggerBoardPhoto('boardPhoto2Input','boardPhoto2Slot','sb_board_photo2')">
+                <div class="photo-slot-icon">📸</div>
+                <div class="photo-slot-label">Загрузить фото</div>
+                <button class="photo-slot-remove" onclick="removeBoardPhoto(event,'boardPhoto2Slot','sb_board_photo2')">✕</button>
+              </div>
+              <input type="file" id="boardPhoto2Input" accept="image/*" style="display:none" onchange="handleBoardPhotoUpload(this,'boardPhoto2Slot','sb_board_photo2')"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="adm-card">
+          <h3>📋 Что включено</h3>
+          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px;">Список того что входит в передержку (отображается буллетами на сайте)</p>
+          <div id="boardIncludesList"></div>
+          <button class="btn btn-yellow btn-sm" style="margin-top:8px;" onclick="addBoardInclude()">➕ Добавить пункт</button>
+        </div>
+
+        <div class="adm-card">
+          <h3>📅 Управление датами передержки</h3>
+          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px;">Добавляй свободные даты. Отмечай забронированные — они становятся серыми.</p>
+          <div class="date-slots-title">Текущие даты:</div>
+          <div id="boardingDatesList" class="date-slots-list"></div>
+          <div class="add-date-row">
+            <input type="date" id="boardDateInput" />
+            <button class="btn btn-yellow btn-sm" onclick="addBoardDate()">➕ Добавить дату</button>
+          </div>
+        </div>
+
+        <div class="adm-card">
+          <h3>💰 Цена и контакты</h3>
+          <div class="adm-grid-2">
+            <div class="adm-field"><label>Цена в сутки</label><input type="text" id="board-price" placeholder="500 ₽/сутки"/></div>
+            <div class="adm-field"><label>Контакт для записи</label><input type="text" id="board-contact" placeholder="@justshelby_agama"/></div>
+          </div>
+          <button class="btn btn-green" onclick="saveBoarding()">💾 Сохранить передержку</button>
+        </div>
+      </div>
+
+      <!-- ════ FONTS ════ -->
+      <div class="adm-panel" id="panel-fonts">
+        <div class="adm-section-title">✍️ Шрифты</div>
+        <div class="adm-section-sub">Выбор и загрузка шрифтов</div>
+        <div class="adm-card" style="border-color:rgba(253,216,53,.4);">
+          <h3 class="yellow">📂 Загрузить свой шрифт</h3>
+          <div class="upload-area" onclick="document.getElementById('customFontInput').click()" style="margin-bottom:12px;">
+            <div class="upload-area-icon">📎</div>
+            <p>Нажми для загрузки шрифта<br/><span>.ttf · .otf · .woff · .woff2</span></p>
+          </div>
+          <input type="file" id="customFontInput" accept=".ttf,.otf,.woff,.woff2" multiple style="display:none" onchange="handleCustomFontUpload(this)"/>
+          <div id="customFontsList"></div>
+        </div>
+        <div class="adm-card">
+          <h3>🎯 Заголовочный шрифт</h3>
+          <div class="font-selector-wrap">
+            <div class="font-current" onclick="toggleFontDropdown('title')">
+              <span class="font-current-name" id="titleFontName">Fredoka One</span>
+              <span class="font-current-preview" id="titleFontPreview" style="font-family:'Fredoka One',cursive;">Агама!</span>
+              <span style="color:rgba(255,255,255,.35);font-size:11px;">▼</span>
+            </div>
+            <div class="font-dropdown" id="titleFontDropdown" style="display:none;">
+              <input class="font-search" type="text" placeholder="🔍 Поиск..." oninput="filterFonts('title',this.value)"/>
+              <div class="font-list" id="titleFontList"></div>
+            </div>
+          </div>
+        </div>
+        <div class="adm-card">
+          <h3>📖 Основной шрифт</h3>
+          <div class="font-selector-wrap">
+            <div class="font-current" onclick="toggleFontDropdown('body')">
+              <span class="font-current-name" id="bodyFontName">Nunito</span>
+              <span class="font-current-preview" id="bodyFontPreview" style="font-family:'Nunito',sans-serif;">Текст Аа</span>
+              <span style="color:rgba(255,255,255,.35);font-size:11px;">▼</span>
+            </div>
+            <div class="font-dropdown" id="bodyFontDropdown" style="display:none;">
+              <input class="font-search" type="text" placeholder="🔍 Поиск..." oninput="filterFonts('body',this.value)"/>
+              <div class="font-list" id="bodyFontList"></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-green" onclick="applyAndSaveFonts()" style="font-size:15px;">💾 Применить шрифты на сайте</button>
+      </div>
+
+      <!-- ════ COLORS ════ -->
+      <div class="adm-panel" id="panel-colors">
+        <div class="adm-section-title">🎨 Цвета и фоны</div>
+        <div class="adm-card">
+          <h3>🖼️ Фоны разделов</h3>
+          <div class="color-grid">
+            <div class="color-item">
+              <label>Hero</label>
+              <div class="color-picker-row"><input type="color" id="bg-hero-start" value="#E8F5E9" oninput="updateColorPreview('bg-hero-start')"/><input type="color" id="bg-hero-end" value="#DCEDC8" oninput="updateColorPreview('bg-hero-end')"/></div>
+              <div class="color-preview-bar" id="prev-bg-hero-start" style="background:linear-gradient(90deg,#E8F5E9,#DCEDC8);"></div>
+            </div>
+            <div class="color-item">
+              <label>Habitat</label>
+              <div class="color-picker-row"><input type="color" id="bg-habitat-start" value="#2E7D32" oninput="updateColorPreview('bg-habitat-start')"/><input type="color" id="bg-habitat-end" value="#1B5E20" oninput="updateColorPreview('bg-habitat-end')"/></div>
+              <div class="color-preview-bar" id="prev-bg-habitat-start" style="background:linear-gradient(90deg,#2E7D32,#1B5E20);"></div>
+            </div>
+            <div class="color-item">
+              <label>Gallery</label>
+              <div class="color-picker-row"><input type="color" id="bg-gallery-start" value="#F1F8E9" oninput="updateColorPreview('bg-gallery-start')"/><input type="color" id="bg-gallery-end" value="#E8F5E9" oninput="updateColorPreview('bg-gallery-end')"/></div>
+              <div class="color-preview-bar" id="prev-bg-gallery-start" style="background:linear-gradient(90deg,#F1F8E9,#E8F5E9);"></div>
+            </div>
+            <div class="color-item">
+              <label>Карточки</label>
+              <div class="color-picker-row"><input type="color" id="bg-card" value="#FFFFFF" oninput="updateColorPreview('bg-card')"/><span class="color-value" id="val-bg-card">#FFFFFF</span></div>
+              <div class="color-preview-bar" id="prev-bg-card" style="background:#FFFFFF;"></div>
+            </div>
+          </div>
+          <button class="btn btn-green" onclick="saveColors()">💾 Сохранить цвета</button>
+        </div>
+      </div>
+
+      <!-- ════ COLORINGS ════ -->
+      <div class="adm-panel" id="panel-colorings">
+        <div class="adm-section-title">🖼️ Раскраски</div>
+        <div class="adm-card">
+          <h3>🎨 Список раскрасок</h3>
+          <div id="coloringsList">
+            <div class="coloring-item">
+              <svg viewBox="0 0 60 44"><ellipse cx="30" cy="24" rx="20" ry="12" fill="none" stroke="#333" stroke-width="2"/><circle cx="14" cy="20" r="4" fill="none" stroke="#333" stroke-width="1.5"/></svg>
+              <div class="coloring-item-info"><div class="coloring-item-name">🦎 Агама сидит</div><div class="coloring-item-desc">Раскраска №1</div></div>
+              <button class="btn btn-danger btn-sm" onclick="this.closest('.coloring-item').remove()">Удалить</button>
+            </div>
+          </div>
+          <div style="margin-top:14px;border:1px solid var(--border);border-radius:10px;padding:14px;">
+            <div style="font-family:var(--ff);font-size:14px;color:#81C784;margin-bottom:10px;">➕ Новая раскраска</div>
+            <div class="adm-grid-2">
+              <div class="adm-field"><label>Название</label><input type="text" id="new-clr-name" placeholder="Название"/></div>
+              <div class="adm-field"><label>Описание</label><input type="text" id="new-clr-desc" placeholder="Раскраска №..."/></div>
+            </div>
+            <button class="btn btn-green btn-sm" onclick="addColoring()">➕ Добавить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ FILES ════ -->
+      <div class="adm-panel" id="panel-files">
+        <div class="adm-section-title">📁 Файлы</div>
+        <div class="adm-section-sub">Файлы появятся в разделе «Интересные файлы» на сайте</div>
+        <div class="adm-card">
+          <h3>📤 Загрузить файлы</h3>
+          <div class="upload-area" id="fileDropArea" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-area-icon">📂</div>
+            <p>Нажми или перетащи файлы<br/><span>PDF, изображения, документы — до 20MB</span></p>
+          </div>
+          <input type="file" id="fileInput" multiple style="display:none" onchange="handleFileUpload(this)"/>
+        </div>
+        <div class="adm-card">
+          <h3>📋 Загруженные файлы <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,.3);" id="filesCountLabel">(0)</span></h3>
+          <div id="filesList"><p style="font-size:13px;color:rgba(255,255,255,.25);font-weight:600;">Файлов пока нет.</p></div>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="clearAllFiles()">🗑️ Очистить всё</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ TELEGRAM ════ -->
+      <div class="adm-panel" id="panel-tg">
+        <div class="adm-section-title">✈️ Telegram</div>
+        <div class="adm-card">
+          <div class="adm-field"><label>Ссылка на ТГ-канал</label><input type="text" id="c-tg-channel" placeholder="https://t.me/justshelby"/></div>
+          <div class="adm-field"><label>Аккаунт для заказов</label><input type="text" id="c-tg-buy" placeholder="@just_agamass"/></div>
+          <button class="btn btn-green" onclick="saveTg()">💾 Сохранить Telegram</button>
+        </div>
+      </div>
+
+      <!-- ════ SETTINGS ════ -->
+      <div class="adm-panel" id="panel-settings">
+        <div class="adm-section-title">⚙️ Настройки</div>
+        <div class="adm-card">
+          <h3>🔐 Смена пароля</h3>
+          <div class="adm-field"><label>Текущий пароль</label><input type="password" id="old-pass" placeholder="••••••••"/></div>
+          <div class="adm-field"><label>Новый пароль</label><input type="password" id="new-pass" placeholder="••••••••"/></div>
+          <div class="adm-field"><label>Повтор нового</label><input type="password" id="new-pass2" placeholder="••••••••"/></div>
+          <button class="btn btn-green" onclick="changePassword()">🔑 Сменить пароль</button>
+        </div>
+        <div class="adm-card" style="border-color:rgba(229,57,53,.35);">
+          <h3 style="color:var(--orange);">⚠️ Опасная зона</h3>
+          <div class="btn-row">
+            <button class="btn btn-danger" onclick="confirmReset()">🗑️ Сбросить все данные</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ════ DEFAULTS ════ */
+const DEFAULTS = {
+  hero:{badge:'🌿 Погружайся в мир рептилий!',t1:'Бородатая',t2:'Агама!',desc:'Ящерица родом из австралийских пустынь — умная, дружелюбная и невероятно классная!',cta:'Узнать больше →'},
+  about:{cards:[{icon:'🦎',title:'Pogona vitticeps',text:'Бородатая агама — ящерица семейства агамовых, эндемик Австралии.'},{icon:'📏',title:'Размер',text:'Взрослые особи достигают 40–60 см в длину.'}],tx:['Животные','Пресмыкающиеся','Чешуйчатые','Агамовые','Pogona','P. vitticeps'],quote:'"Агама — это не просто рептилия!" 🥰'},
+  habitat:{em:'австралийская пустыня!',cards:[{icon:'🌡️',title:'Температура',text:'35–45°C днём.',photo:''},{icon:'☀️',title:'Освещение',text:'До 12 часов солнца.',photo:''}]},
+  care:{cards:[{title:'🏡 Террариум',text:'120×60×60 см минимум.',tag:'Обустройство'}]},
+  gallery:{em:'и морфы!',morphs:[{emoji:'🦎',title:'Wild Type',text:'Природный окрас.',color:'#C4723A'},{emoji:'🔥',title:'Red / Citrus',text:'Яркий красно-оранжевый.',color:'#E84C30'}]},
+  facts:{cards:[{title:'👁️ Третий глаз',text:'Теменной орган.'},{title:'🎨 Смена цвета',text:'Агамы меняют цвет.'}]},
+  footer:{tagline:'Pogona vitticeps 💚',copy:'© 2026 Shelby-book',sub:'Сделано с 💚'}
+};
+
+const CREDS_DEFAULT = {user:'shelby', pass:'agama2026'};
+
+/* ════ LECTURES / BOARDING STATE ════ */
+let lectures = [];
+let boardingDates = [];
+let boardIncludes = [];
+
+let aboutCards=[], habitatCards=[], careCards=[], morphCards=[], factCards=[];
+let uploadedFiles=[];
+let customFonts=[];
+let selectedFonts={body:'Nunito',title:'Fredoka One',accent:'Bubblegum Sans'};
+let selectedFontUrls={body:'Nunito:wght@800',title:'Fredoka+One',accent:'Bubblegum+Sans'};
+let loadedFontLinks=new Set();
+let openDropdown=null;
+
+const FONTS_DB=[
+  {name:'Fredoka One',cat:'🎉 Игровые',sample:'Агама!',url:'Fredoka+One'},
+  {name:'Bubblegum Sans',cat:'🎉 Игровые',sample:'Агама 🦎',url:'Bubblegum+Sans'},
+  {name:'Nunito',cat:'🌸 Округлые',sample:'Агама Аа',url:'Nunito:wght@800'},
+  {name:'Comfortaa',cat:'🌸 Округлые',sample:'Агама',url:'Comfortaa:wght@700'},
+  {name:'Montserrat',cat:'🔷 Современные',sample:'АГАМА',url:'Montserrat:wght@700'},
+  {name:'Pacifico',cat:'🎉 Игровые',sample:'Агама ~',url:'Pacifico'},
+  {name:'Bebas Neue',cat:'🕹️ Декоративные',sample:'АГАМА',url:'Bebas+Neue'},
+  {name:'Caveat',cat:'✍️ Рукописные',sample:'Агама~',url:'Caveat:wght@700'},
+  {name:'Lobster',cat:'🎉 Игровые',sample:'Агама!',url:'Lobster'},
+  {name:'Rubik',cat:'🌸 Округлые',sample:'Агама!',url:'Rubik:wght@700'},
+];
+
+/* ════ AUTH — FIXED ════ */
+function getSavedCreds() {
+  try {
+    const raw = localStorage.getItem('sb_admin_creds');
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) {
+    // Corrupted data — clear it
+    localStorage.removeItem('sb_admin_creds');
+    return null;
+  }
+}
+
+function doLogin() {
+  const userEl = document.getElementById('loginUser');
+  const passEl = document.getElementById('loginPass');
+  const errEl  = document.getElementById('loginError');
+
+  // Trim whitespace (copy-paste issues)
+  const u = userEl.value.trim();
+  const p = passEl.value; // don't trim password
+
+  const saved = getSavedCreds();
+  const valid = saved || CREDS_DEFAULT;
+
+  errEl.style.display = 'none';
+
+  if (u === valid.user && p === valid.pass) {
+    try { localStorage.setItem('sb_admin_session', '1'); } catch(e) {}
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminApp').style.display = 'block';
+    initAdmin();
+  } else {
+    errEl.style.display = 'block';
+    passEl.value = '';
+    passEl.focus();
+    // Shake animation
+    const box = document.querySelector('.login-box');
+    box.style.animation = 'shake .4s ease';
+    setTimeout(() => box.style.animation = '', 400);
+  }
+}
+
+function doLogout() {
+  try { localStorage.removeItem('sb_admin_session'); } catch(e) {}
+  location.reload();
+}
+
+function changePassword() {
+  const o=v('old-pass'), n=v('new-pass'), n2=v('new-pass2');
+  const saved = getSavedCreds();
+  const cur = saved || CREDS_DEFAULT;
+  if (o !== cur.pass) { showToast('❌ Неверный текущий пароль!'); return; }
+  if (n !== n2) { showToast('❌ Пароли не совпадают!'); return; }
+  if (n.length < 4) { showToast('❌ Слишком короткий!'); return; }
+  try {
+    localStorage.setItem('sb_admin_creds', JSON.stringify({user: cur.user, pass: n}));
+  } catch(e) {}
+  showToast('🔑 Пароль изменён!');
+  ['old-pass','new-pass','new-pass2'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+}
+
+/* ════ NAV ════ */
+function showPanel(id, el) {
+  document.querySelectorAll('.adm-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.adm-nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
+  if (el) el.classList.add('active');
+  if (window.innerWidth <= 860) closeSidebar();
+}
+function toggleSidebar() {
+  const sb = document.getElementById('admSidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  const hb = document.getElementById('admHamburger');
+  const open = sb.classList.toggle('mobile-open');
+  ov.classList.toggle('open', open);
+  hb.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function closeSidebar() {
+  document.getElementById('admSidebar').classList.remove('mobile-open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+  document.getElementById('admHamburger').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function openSite() { window.open('index.html', '_blank'); }
+function openEditMode() { window.open('index.html?edit=1', '_blank'); }
+
+/* ════ TOAST ════ */
+function showToast(msg='✅ Сохранено!') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ════ HELPERS ════ */
+function v(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+function setV(id, val) { const el = document.getElementById(id); if (el) el.value = val || ''; }
+function esc(s) { return (s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function safeGet(key, def='{}') { try { return JSON.parse(localStorage.getItem(key) || def); } catch(e) { return JSON.parse(def); } }
+function safeSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) { showToast('⚠️ Хранилище переполнено'); } }
+
+/* ════ INIT ════ */
+function initAdmin() {
+  uploadedFiles = safeGet('sb_files', '[]');
+  customFonts = safeGet('sb_custom_fonts', '[]');
+  loadAllSaved();
+  renderFiles();
+  updateStats();
+  renderCustomFontsUI();
+  loadColorsIntoUI();
+  loadBoardPhotos();
+  setupFileDragDrop();
+  loadLecturesData();
+  loadBoardingData();
+}
+
+/* ════ SAVE ALL ════ */
+function saveAllSections() {
+  saveSection('hero'); saveSection('about'); saveSection('habitat');
+  saveSection('care'); saveSection('gallery'); saveSection('facts');
+  saveSection('footer'); saveTg(); saveLectures(); saveBoarding();
+  showToast('💾 Все разделы сохранены!');
+}
+
+/* ════ SAVE SECTION ════ */
+function saveSection(section) {
+  const all = safeGet('sb_inline_content');
+  if (section==='hero') {
+    all['hero-badge']=v('c-hero-badge'); all['hero-t1']=v('c-hero-t1');
+    all['hero-t2']=v('c-hero-t2'); all['hero-desc']=v('c-hero-desc');
+    all['hero-cta']=v('c-hero-cta');
+  } else if (section==='about') {
+    all['__aboutCards']=aboutCards;
+    DEFAULTS.about.tx.forEach((_,i) => all['tx'+(i+1)]=v('tx'+(i+1)));
+    all['about-quote']=v('c-about-quote');
+  } else if (section==='habitat') {
+    all['hab-em']=v('c-hab-em'); all['__habitatCards']=habitatCards;
+  } else if (section==='care') {
+    all['__careCards']=careCards;
+  } else if (section==='gallery') {
+    all['gal-em']=v('c-gal-em'); all['__morphCards']=morphCards;
+    all['__morphColors']=morphCards.map(m=>m.color);
+  } else if (section==='facts') {
+    all['__factCards']=factCards;
+  } else if (section==='footer') {
+    all['ft-tagline']=v('c-footer-tagline');
+    all['ft-copy']=v('c-footer-copy'); all['ft-sub']=v('c-footer-sub');
+  }
+  safeSet('sb_inline_content', all);
+  showToast('💾 «'+section+'» сохранено!');
+}
+
+/* ════ LOAD SAVED ════ */
+function loadAllSaved() {
+  const all = safeGet('sb_inline_content');
+  setV('c-hero-badge', all['hero-badge']||DEFAULTS.hero.badge);
+  setV('c-hero-t1', all['hero-t1']||DEFAULTS.hero.t1);
+  setV('c-hero-t2', all['hero-t2']||DEFAULTS.hero.t2);
+  setV('c-hero-desc', all['hero-desc']||DEFAULTS.hero.desc);
+  setV('c-hero-cta', all['hero-cta']||DEFAULTS.hero.cta);
+  aboutCards = all['__aboutCards'] || JSON.parse(JSON.stringify(DEFAULTS.about.cards));
+  renderAboutCards();
+  DEFAULTS.about.tx.forEach((d,i) => setV('tx'+(i+1), all['tx'+(i+1)]||d));
+  setV('c-about-quote', all['about-quote']||DEFAULTS.about.quote);
+  habitatCards = all['__habitatCards'] || JSON.parse(JSON.stringify(DEFAULTS.habitat.cards));
+  setV('c-hab-em', all['hab-em']||DEFAULTS.habitat.em);
+  renderHabitatCards();
+  careCards = all['__careCards'] || JSON.parse(JSON.stringify(DEFAULTS.care.cards));
+  renderCareCards();
+  morphCards = all['__morphCards'] || JSON.parse(JSON.stringify(DEFAULTS.gallery.morphs));
+  setV('c-gal-em', all['gal-em']||DEFAULTS.gallery.em);
+  renderMorphCards();
+  factCards = all['__factCards'] || JSON.parse(JSON.stringify(DEFAULTS.facts.cards));
+  renderFactCards();
+  setV('c-footer-tagline', all['ft-tagline']||DEFAULTS.footer.tagline);
+  setV('c-footer-copy', all['ft-copy']||DEFAULTS.footer.copy);
+  setV('c-footer-sub', all['ft-sub']||DEFAULTS.footer.sub);
+  const tg = safeGet('sb_tg');
+  setV('c-tg-channel', tg.channel||'https://t.me/justshelby');
+  setV('c-tg-buy', tg.buy||'@just_agamass');
+  const hi = localStorage.getItem('sb_hero_image');
+  if (hi) showHeroPreview(hi);
+}
+
+/* ════ CARD RENDERERS ════ */
+function renderAboutCards() {
+  document.getElementById('aboutCardsList').innerHTML = aboutCards.map((c,i) => `
+    <div class="item-card">
+      <div class="item-card-header"><span class="item-card-num">Карточка ${i+1}</span><button class="item-card-del" onclick="aboutCards.splice(${i},1);renderAboutCards()">✕ Удалить</button></div>
+      <div class="adm-grid-3">
+        <div class="adm-field"><label>Иконка</label><input type="text" value="${esc(c.icon)}" oninput="aboutCards[${i}].icon=this.value"/></div>
+        <div class="adm-field"><label>Заголовок</label><input type="text" value="${esc(c.title)}" oninput="aboutCards[${i}].title=this.value"/></div>
+      </div>
+      <div class="adm-field"><label>Текст</label><textarea oninput="aboutCards[${i}].text=this.value">${esc(c.text)}</textarea></div>
+    </div>`).join('');
+}
+function addAboutCard() { aboutCards.push({icon:'🦎',title:'Новый пункт',text:'Описание...'}); renderAboutCards(); }
+
+function renderHabitatCards() {
+  document.getElementById('habitatCardsList').innerHTML = habitatCards.map((c,i) => `
+    <div class="item-card">
+      <div class="item-card-header"><span class="item-card-num">Карточка ${i+1}</span><button class="item-card-del" onclick="habitatCards.splice(${i},1);renderHabitatCards()">✕ Удалить</button></div>
+      <div class="adm-grid-3">
+        <div class="adm-field"><label>Иконка</label><input type="text" value="${esc(c.icon)}" oninput="habitatCards[${i}].icon=this.value"/></div>
+        <div class="adm-field"><label>Заголовок</label><input type="text" value="${esc(c.title)}" oninput="habitatCards[${i}].title=this.value"/></div>
+      </div>
+      <div class="adm-field"><label>Текст</label><textarea oninput="habitatCards[${i}].text=this.value">${esc(c.text)}</textarea></div>
+    </div>`).join('');
+}
+function addHabitatCard() { habitatCards.push({icon:'🌿',title:'Новый пункт',text:'Описание...',photo:''}); renderHabitatCards(); }
+
+function renderCareCards() {
+  document.getElementById('careCardsList').innerHTML = careCards.map((c,i) => `
+    <div class="item-card">
+      <div class="item-card-header"><span class="item-card-num">Шаг ${String(i+1).padStart(2,'0')}</span><button class="item-card-del" onclick="careCards.splice(${i},1);renderCareCards()">✕ Удалить</button></div>
+      <div class="adm-grid-2">
+        <div class="adm-field"><label>Заголовок</label><input type="text" value="${esc(c.title)}" oninput="careCards[${i}].title=this.value"/></div>
+        <div class="adm-field"><label>Тег</label><input type="text" value="${esc(c.tag)}" oninput="careCards[${i}].tag=this.value"/></div>
+      </div>
+      <div class="adm-field"><label>Текст</label><textarea oninput="careCards[${i}].text=this.value">${esc(c.text)}</textarea></div>
+    </div>`).join('');
+}
+function addCareCard() { careCards.push({title:'🆕 Новый шаг',text:'Описание...',tag:'Уход'}); renderCareCards(); }
+
+function renderMorphCards() {
+  document.getElementById('morphCardsList').innerHTML = morphCards.map((m,i) => `
+    <div class="morph-editor-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><span class="item-card-num">Морф ${i+1}</span><button class="item-card-del" onclick="morphCards.splice(${i},1);renderMorphCards()">✕ Удалить</button></div>
+      <div class="morph-color-row">
+        <div class="morph-swatch-preview" id="msw-${i}" style="background:${m.color};"></div>
+        <input type="color" value="${m.color}" oninput="morphCards[${i}].color=this.value;document.getElementById('msw-${i}').style.background=this.value" style="width:40px;height:34px;border-radius:7px;border:2px solid var(--border);cursor:pointer;padding:2px;"/>
+      </div>
+      <div class="adm-grid-3">
+        <div class="adm-field"><label>Эмодзи</label><input type="text" value="${esc(m.emoji)}" oninput="morphCards[${i}].emoji=this.value"/></div>
+        <div class="adm-field"><label>Название</label><input type="text" value="${esc(m.title)}" oninput="morphCards[${i}].title=this.value"/></div>
+      </div>
+      <div class="adm-field"><label>Описание</label><textarea oninput="morphCards[${i}].text=this.value">${esc(m.text)}</textarea></div>
+    </div>`).join('');
+  document.getElementById('stat-morphs').textContent = morphCards.length;
+}
+function addMorphCard() {
+  const colors=['#4CAF50','#FF7043','#FDD835','#29B6F6','#AB47BC'];
+  morphCards.push({emoji:'🦎',title:'Новый морф',text:'Описание...',color:colors[morphCards.length%colors.length],photo:''});
+  renderMorphCards();
+}
+
+function renderFactCards() {
+  document.getElementById('factsCardsList').innerHTML = factCards.map((f,i) => `
+    <div class="item-card">
+      <div class="item-card-header"><span class="item-card-num">Факт ${String(i+1).padStart(2,'0')}</span><button class="item-card-del" onclick="factCards.splice(${i},1);renderFactCards()">✕ Удалить</button></div>
+      <div class="adm-field"><label>Заголовок</label><input type="text" value="${esc(f.title)}" oninput="factCards[${i}].title=this.value"/></div>
+      <div class="adm-field"><label>Текст</label><textarea oninput="factCards[${i}].text=this.value">${esc(f.text)}</textarea></div>
+    </div>`).join('');
+}
+function addFactCard() { factCards.push({title:'⚡ Новый факт',text:'Удивительный факт...'}); renderFactCards(); }
+
+/* ════ LECTURES ════ */
+function loadLecturesData() {
+  const data = safeGet('sb_lectures', '{"items":[],"title":"","desc":""}');
+  lectures = data.items || [];
+  setV('lec-section-title', data.title || '');
+  setV('lec-section-desc', data.desc || '');
+  renderLectures();
+}
+
+function saveLectures() {
+  safeSet('sb_lectures', {
+    title: v('lec-section-title'),
+    desc: v('lec-section-desc'),
+    items: lectures
+  });
+  showToast('📚 Лекции сохранены!');
+}
+
+function addLecture() {
+  lectures.push({
+    id: Date.now(),
+    title: 'Новая лекция',
+    desc: 'Описание лекции...',
+    photo: '',
+    dates: []
+  });
+  renderLectures();
+}
+
+function removeLecture(idx) {
+  if (!confirm('Удалить лекцию?')) return;
+  lectures.splice(idx, 1);
+  renderLectures();
+}
+
+function addLectureDate(idx) {
+  const input = document.getElementById(`lec-date-input-${idx}`);
+  const dateVal = input.value;
+  if (!dateVal) { showToast('❌ Выбери дату!'); return; }
+  if (lectures[idx].dates.find(d => d.date === dateVal)) { showToast('⚠️ Дата уже добавлена'); return; }
+  lectures[idx].dates.push({date: dateVal, booked: false});
+  lectures[idx].dates.sort((a,b) => a.date.localeCompare(b.date));
+  renderLectureDates(idx);
+  input.value = '';
+}
+
+function toggleLectureDate(idx, dateIdx) {
+  lectures[idx].dates[dateIdx].booked = !lectures[idx].dates[dateIdx].booked;
+  renderLectureDates(idx);
+}
+
+function removeLectureDate(idx, dateIdx) {
+  lectures[idx].dates.splice(dateIdx, 1);
+  renderLectureDates(idx);
+}
+
+function renderLectureDates(idx) {
+  const container = document.getElementById(`lec-dates-${idx}`);
+  if (!container) return;
+  const d = lectures[idx].dates;
+  container.innerHTML = d.length === 0
+    ? '<span style="font-size:12px;color:rgba(255,255,255,.3);">Нет дат</span>'
+    : d.map((slot, di) => `
+      <div class="date-slot-tag ${slot.booked ? 'booked' : 'free'}">
+        <span>${formatDate(slot.date)}</span>
+        <button class="toggle-booked-btn" onclick="toggleLectureDate(${idx},${di})" title="${slot.booked ? 'Отметить свободной' : 'Отметить занятой'}">${slot.booked ? '🔓' : '🔒'}</button>
+        <button class="date-slot-del" onclick="removeLectureDate(${idx},${di})">✕</button>
+      </div>`).join('');
+}
+
+function handleLecturePhoto(input, idx) {
+  const f = input.files[0]; if (!f) return;
+  if (f.size > 5*1024*1024) { showToast('❌ Макс 5MB'); return; }
+  const r = new FileReader();
+  r.onload = e => {
+    lectures[idx].photo = e.target.result;
+    const slot = document.getElementById(`lec-photo-slot-${idx}`);
+    if (slot) slot.innerHTML = `<img src="${e.target.result}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"/><button class="photo-slot-remove" style="display:flex;" onclick="event.stopPropagation();lectures[${idx}].photo='';document.getElementById('lec-photo-slot-${idx}').innerHTML='<div class=\\'photo-slot-icon\\'>📸</div><div class=\\'photo-slot-label\\'>Загрузить фото</div>'">✕</button>`;
+    showToast('📷 Фото добавлено!');
+  };
+  r.readAsDataURL(f);
+  input.value = '';
+}
+
+function renderLectures() {
+  const container = document.getElementById('lecturesList');
+  if (!lectures.length) {
+    container.innerHTML = '<p style="font-size:13px;color:rgba(255,255,255,.3);font-weight:600;">Лекций пока нет. Добавь первую!</p>';
+    return;
+  }
+  container.innerHTML = lectures.map((lec, i) => `
+    <div class="lecture-card">
+      <div class="lecture-card-header">
+        <span class="lecture-badge badge-lecture">Лекция ${i+1}</span>
+        <button class="item-card-del" onclick="removeLecture(${i})">✕ Удалить</button>
+      </div>
+
+      <div class="adm-grid-2" style="margin-bottom:12px;">
+        <div>
+          <div class="adm-field"><label>Название лекции</label><input type="text" value="${esc(lec.title)}" oninput="lectures[${i}].title=this.value"/></div>
+          <div class="adm-field"><label>Описание</label><textarea oninput="lectures[${i}].desc=this.value">${esc(lec.desc)}</textarea></div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:800;color:#81C784;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">📷 Фото</div>
+          <div class="photo-slot" style="min-height:110px;" id="lec-photo-slot-${i}" onclick="document.getElementById('lec-photo-input-${i}').click()">
+            ${lec.photo
+              ? `<img src="${lec.photo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"/><button class="photo-slot-remove" style="display:flex;" onclick="event.stopPropagation();lectures[${i}].photo='';this.closest('.photo-slot').innerHTML='<div class=\\'photo-slot-icon\\'>📸</div><div class=\\'photo-slot-label\\'>Загрузить фото</div>'">✕</button>`
+              : `<div class="photo-slot-icon">📸</div><div class="photo-slot-label">Загрузить фото</div>`}
+          </div>
+          <input type="file" id="lec-photo-input-${i}" accept="image/*" style="display:none" onchange="handleLecturePhoto(this,${i})"/>
+        </div>
+      </div>
+
+      <div class="date-slots-wrap">
+        <div class="date-slots-title">📅 Свободные даты:</div>
+        <div class="date-slots-list" id="lec-dates-${i}">${lectures[i].dates.length === 0
+          ? '<span style="font-size:12px;color:rgba(255,255,255,.3);">Нет дат</span>'
+          : lectures[i].dates.map((slot,di) => `
+            <div class="date-slot-tag ${slot.booked?'booked':'free'}">
+              <span>${formatDate(slot.date)}</span>
+              <button class="toggle-booked-btn" onclick="toggleLectureDate(${i},${di})">${slot.booked?'🔓':'🔒'}</button>
+              <button class="date-slot-del" onclick="removeLectureDate(${i},${di})">✕</button>
+            </div>`).join('')}
+        </div>
+        <div class="add-date-row">
+          <input type="date" id="lec-date-input-${i}"/>
+          <button class="btn btn-blue btn-sm" onclick="addLectureDate(${i})">➕ Добавить дату</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+/* ════ BOARDING ════ */
+function loadBoardingData() {
+  const data = safeGet('sb_boarding', '{"title":"","desc":"","price":"","contact":"","includes":[],"dates":[]}');
+  setV('board-section-title', data.title||'');
+  setV('board-section-desc', data.desc||'');
+  setV('board-price', data.price||'');
+  setV('board-contact', data.contact||'');
+  boardIncludes = data.includes || [];
+  boardingDates = data.dates || [];
+  renderBoardIncludes();
+  renderBoardingDates();
+  loadBoardPhotos();
+}
+
+function saveBoarding() {
+  safeSet('sb_boarding', {
+    title: v('board-section-title'),
+    desc: v('board-section-desc'),
+    price: v('board-price'),
+    contact: v('board-contact'),
+    includes: boardIncludes,
+    dates: boardingDates
+  });
+  showToast('🏡 Передержка сохранена!');
+}
+
+function addBoardInclude() {
+  boardIncludes.push({text: 'Новый пункт'});
+  renderBoardIncludes();
+}
+function renderBoardIncludes() {
+  const c = document.getElementById('boardIncludesList');
+  if (!boardIncludes.length) {
+    c.innerHTML = '<p style="font-size:12px;color:rgba(255,255,255,.3);">Пунктов нет</p>';
+    return;
+  }
+  c.innerHTML = boardIncludes.map((inc, i) => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+      <span style="color:var(--g3);font-size:14px;">✓</span>
+      <input type="text" value="${esc(inc.text)}" oninput="boardIncludes[${i}].text=this.value"
+        style="flex:1;padding:8px 12px;background:rgba(255,255,255,.05);border:2px solid var(--border);border-radius:8px;color:#e0ffe2;font-family:var(--fb);font-size:13px;font-weight:600;outline:none;"/>
+      <button class="item-card-del" style="margin-left:0;" onclick="boardIncludes.splice(${i},1);renderBoardIncludes()">✕</button>
+    </div>`).join('');
+}
+
+function addBoardDate() {
+  const input = document.getElementById('boardDateInput');
+  const dateVal = input.value;
+  if (!dateVal) { showToast('❌ Выбери дату!'); return; }
+  if (boardingDates.find(d => d.date === dateVal)) { showToast('⚠️ Дата уже добавлена'); return; }
+  boardingDates.push({date: dateVal, booked: false});
+  boardingDates.sort((a,b) => a.date.localeCompare(b.date));
+  renderBoardingDates();
+  input.value = '';
+}
+
+function toggleBoardDate(idx) {
+  boardingDates[idx].booked = !boardingDates[idx].booked;
+  renderBoardingDates();
+}
+
+function removeBoardDate(idx) {
+  boardingDates.splice(idx, 1);
+  renderBoardingDates();
+}
+
+function renderBoardingDates() {
+  const c = document.getElementById('boardingDatesList');
+  if (!boardingDates.length) {
+    c.innerHTML = '<span style="font-size:12px;color:rgba(255,255,255,.3);">Нет дат</span>';
+    return;
+  }
+  c.innerHTML = boardingDates.map((slot, i) => `
+    <div class="date-slot-tag ${slot.booked ? 'booked' : 'free'}">
+      <span>${formatDate(slot.date)}</span>
+      <button class="toggle-booked-btn" onclick="toggleBoardDate(${i})" title="${slot.booked ? 'Отметить свободной' : 'Отметить занятой'}">${slot.booked ? '🔓 Освободить' : '🔒 Занять'}</button>
+      <button class="date-slot-del" onclick="removeBoardDate(${i})">✕</button>
+    </div>`).join('');
+}
+
+function formatDate(dateStr) {
+  try {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('ru-RU', {day:'numeric', month:'short', year:'numeric'});
+  } catch(e) { return dateStr; }
+}
+
+/* ════ BOARDING PHOTOS ════ */
+function triggerBoardPhoto(inputId, slotId, storageKey) {
+  document.getElementById(inputId).click();
+}
+function handleBoardPhotoUpload(input, slotId, storageKey) {
+  const f = input.files[0]; if (!f) return;
+  if (f.size > 5*1024*1024) { showToast('❌ Макс 5MB'); return; }
+  const r = new FileReader();
+  r.onload = e => {
+    try { localStorage.setItem(storageKey, e.target.result); } catch(ex) {}
+    renderBoardPhotoSlot(slotId, e.target.result, storageKey);
+    showToast('📸 Фото добавлено!');
+  };
+  r.readAsDataURL(f);
+  input.value = '';
+}
+function renderBoardPhotoSlot(slotId, src, storageKey) {
+  const slot = document.getElementById(slotId);
+  if (!slot) return;
+  slot.innerHTML = `<img src="${src}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block;"/><button class="photo-slot-remove" style="display:flex;" onclick="removeBoardPhoto(event,'${slotId}','${storageKey}')">✕</button>`;
+}
+function removeBoardPhoto(e, slotId, storageKey) {
+  e.stopPropagation();
+  try { localStorage.removeItem(storageKey); } catch(ex) {}
+  const slot = document.getElementById(slotId);
+  if (slot) slot.innerHTML = `<div class="photo-slot-icon">📸</div><div class="photo-slot-label">Загрузить фото</div><button class="photo-slot-remove" onclick="removeBoardPhoto(event,'${slotId}','${storageKey}')">✕</button>`;
+}
+function loadBoardPhotos() {
+  ['sb_board_photo1','sb_board_photo2'].forEach((key,i) => {
+    const slotId = `boardPhoto${i+1}Slot`;
+    try {
+      const src = localStorage.getItem(key);
+      if (src) renderBoardPhotoSlot(slotId, src, key);
+    } catch(e) {}
+  });
+}
+
+/* ════ HERO IMAGE ════ */
+function handleHeroImageUpload(input) {
+  const f = input.files[0]; if (!f) return;
+  if (f.size > 5*1024*1024) { showToast('❌ Макс 5MB'); return; }
+  const r = new FileReader();
+  r.onload = e => { try { localStorage.setItem('sb_hero_image', e.target.result); } catch(ex) {} showHeroPreview(e.target.result); showToast('🖼️ Фото сохранено!'); };
+  r.readAsDataURL(f);
+  input.value = '';
+}
+function showHeroPreview(src) {
+  const w = document.getElementById('heroImgPreviewWrap');
+  const im = document.getElementById('heroImgPreview');
+  if (src) { im.src=src; w.style.display='block'; } else { w.style.display='none'; }
+}
+function removeHeroImage() {
+  if (!confirm('Удалить главное фото?')) return;
+  try { localStorage.removeItem('sb_hero_image'); } catch(e) {}
+  showHeroPreview(null);
+  showToast('🗑️ Фото удалено');
+}
+
+/* ════ FONTS ════ */
+function buildFontList(type, q) {
+  const container = document.getElementById(type+'FontList');
+  if (!container) return;
+  const filtered = FONTS_DB.filter(f => !q || f.name.toLowerCase().includes(q.toLowerCase()));
+  const groups = {};
+  filtered.forEach(f => { if (!groups[f.cat]) groups[f.cat]=[]; groups[f.cat].push(f); });
+  let html = '';
+  Object.entries(groups).forEach(([cat, fonts]) => {
+    html += `<div style="padding:6px 12px 3px;font-size:9.5px;font-weight:800;color:rgba(255,255,255,.25);letter-spacing:.1em;text-transform:uppercase;">${cat}</div>`;
+    fonts.forEach(f => {
+      loadGFont(f);
+      html += `<div class="font-item ${selectedFonts[type]===f.name?'selected':''}" onclick="selectFont('${type}','${f.name}','${f.url||''}',this)">
+        <span class="font-item-sample" style="font-family:'${f.name}',sans-serif;">${f.sample}</span>
+        <span class="font-item-name">${f.name}</span></div>`;
+    });
+  });
+  container.innerHTML = html;
+}
+function filterFonts(type, q) { buildFontList(type, q); }
+function loadGFont(font) {
+  if (!font.url || loadedFontLinks.has(font.name)) return;
+  loadedFontLinks.add(font.name);
+  const l = document.createElement('link');
+  l.rel='stylesheet';
+  l.href = `https://fonts.googleapis.com/css2?family=${font.url}&display=swap`;
+  document.head.appendChild(l);
+}
+function toggleFontDropdown(type) {
+  const dd = document.getElementById(type+'FontDropdown');
+  if (!dd) return;
+  const isOpen = dd.style.display !== 'none';
+  document.querySelectorAll('.font-dropdown').forEach(d => d.style.display='none');
+  openDropdown = null;
+  if (!isOpen) { dd.style.display='block'; openDropdown=type; buildFontList(type,''); }
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.font-selector-wrap')) {
+    document.querySelectorAll('.font-dropdown').forEach(d => d.style.display='none');
+    openDropdown = null;
+  }
+});
+function selectFont(type, name, url, el) {
+  selectedFonts[type]=name; selectedFontUrls[type]=url;
+  document.getElementById(type+'FontDropdown').style.display='none';
+  document.getElementById(type+'FontName').textContent=name;
+  const pr=document.getElementById(type+'FontPreview');
+  if (pr) { pr.style.fontFamily="'"+name+"',sans-serif"; }
+  openDropdown=null;
+}
+function applyAndSaveFonts() {
+  try { localStorage.setItem('sb_fonts', JSON.stringify(selectedFonts)); } catch(e) {}
+  const css=`:root { --ff:'${selectedFonts.title}',cursive; --fb:'${selectedFonts.body}',sans-serif; --fb2:'${selectedFonts.accent||"Bubblegum Sans"}',cursive; }`;
+  try { localStorage.setItem('sb_custom_css', css); } catch(e) {}
+  showToast('✍️ Шрифты применены!');
+}
+
+/* ════ CUSTOM FONTS ════ */
+function handleCustomFontUpload(input) {
+  Array.from(input.files).forEach(file => {
+    if (file.size > 10*1024*1024) { showToast('❌ Шрифт > 10MB'); return; }
+    const name = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g,' ');
+    const ext = file.name.split('.').pop().toLowerCase();
+    const mime = {ttf:'truetype',otf:'opentype',woff:'woff',woff2:'woff2'}[ext]||'truetype';
+    const r = new FileReader();
+    r.onload = e => {
+      injectCustomFontFace(name, e.target.result, mime);
+      customFonts.push({name, data:e.target.result, mime, ext});
+      safeSet('sb_custom_fonts', customFonts);
+      renderCustomFontsUI();
+      showToast(`✍️ Шрифт «${name}» загружен!`);
+    };
+    r.readAsDataURL(file);
+  });
+  input.value='';
+}
+function injectCustomFontFace(name, data, mime) {
+  const s = document.createElement('style');
+  s.textContent = `@font-face{font-family:'${name}';src:url('${data}') format('${mime}');font-display:swap;}`;
+  document.head.appendChild(s);
+}
+function renderCustomFontsUI() {
+  const c = document.getElementById('customFontsList');
+  if (!c) return;
+  customFonts.forEach(f => injectCustomFontFace(f.name, f.data, f.mime));
+  if (!customFonts.length) { c.innerHTML='<p style="font-size:12px;color:rgba(255,255,255,.3);font-weight:600;">Свои шрифты не загружены</p>'; return; }
+  c.innerHTML = customFonts.map((f,i) => `
+    <div class="custom-font-item">
+      <span style="font-family:'${f.name}',sans-serif;font-size:16px;color:var(--g3);">Агама!</span>
+      <span class="custom-font-item-name">${f.name} (.${f.ext})</span>
+      <button class="btn btn-danger btn-sm" onclick="deleteCustomFont(${i})">✕</button>
+    </div>`).join('');
+}
+function deleteCustomFont(i) {
+  customFonts.splice(i,1);
+  safeSet('sb_custom_fonts', customFonts);
+  renderCustomFontsUI();
+}
+
+/* ════ COLORS ════ */
+function updateColorPreview(id) {
+  const input=document.getElementById(id); if(!input) return;
+  const val=input.value;
+  const prev=document.getElementById('prev-'+id);
+  const valSpan=document.getElementById('val-'+id);
+  if (prev) {
+    if (id.endsWith('-start')||id.endsWith('-end')) {
+      const base=id.replace(/-start$/,'').replace(/-end$/,'');
+      const s=document.getElementById(base+'-start');
+      const en=document.getElementById(base+'-end');
+      if (s&&en) prev.style.background=`linear-gradient(90deg,${s.value},${en.value})`;
+    } else { prev.style.background=val; }
+  }
+  if (valSpan) valSpan.textContent=val;
+}
+function saveColors() {
+  const colors={};
+  document.querySelectorAll('.color-item input[type="color"]').forEach(inp => { colors[inp.id]=inp.value; });
+  safeSet('sb_colors', colors);
+  showToast('🎨 Цвета сохранены!');
+}
+function loadColorsIntoUI() {
+  const colors = safeGet('sb_colors');
+  Object.entries(colors).forEach(([id,val]) => {
+    const el=document.getElementById(id);
+    if (el) { el.value=val; updateColorPreview(id); }
+  });
+}
+
+/* ════ COLORING ════ */
+function addColoring() {
+  const name=v('new-clr-name'); const desc=v('new-clr-desc');
+  if (!name) { showToast('❌ Укажи название!'); return; }
+  const list=document.getElementById('coloringsList');
+  const item=document.createElement('div');
+  item.className='coloring-item';
+  item.innerHTML=`<svg viewBox="0 0 60 44" style="background:#fff;border-radius:6px;flex-shrink:0;"><text x="30" y="28" text-anchor="middle" font-size="20">🎨</text></svg>
+    <div class="coloring-item-info"><div class="coloring-item-name">${name}</div><div class="coloring-item-desc">${desc}</div></div>
+    <button class="btn btn-danger btn-sm" onclick="this.closest('.coloring-item').remove()">Удалить</button>`;
+  list.appendChild(item);
+  setV('new-clr-name',''); setV('new-clr-desc','');
+  showToast('🎨 Раскраска добавлена!');
+}
+
+/* ════ FILES ════ */
+function setupFileDragDrop() {
+  const area=document.getElementById('fileDropArea');
+  if (!area) return;
+  ['dragenter','dragover'].forEach(ev=>area.addEventListener(ev,e=>{e.preventDefault();area.classList.add('drag');}));
+  ['dragleave','drop'].forEach(ev=>area.addEventListener(ev,e=>{e.preventDefault();area.classList.remove('drag');}));
+  area.addEventListener('drop',e=>{if(e.dataTransfer.files.length)processFiles(e.dataTransfer.files);});
+}
+function handleFileUpload(input){processFiles(input.files);input.value='';}
+function processFiles(files){
+  Array.from(files).forEach(file=>{
+    if(file.size>20*1024*1024){showToast(`❌ ${file.name} > 20MB`);return;}
+    const r=new FileReader();
+    r.onload=e=>{
+      uploadedFiles.push({id:Date.now()+Math.random(),name:file.name,size:formatBytes(file.size),type:file.type,date:new Date().toLocaleDateString('ru'),data:e.target.result,desc:''});
+      saveFiles();renderFiles();updateStats();
+    };
+    r.readAsDataURL(file);
+  });
+}
+function formatBytes(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
+function getFileIcon(t){if(!t)return'📁';if(t.includes('image'))return'🖼️';if(t.includes('pdf'))return'📄';if(t.includes('video'))return'🎬';if(t.includes('audio'))return'🎵';if(t.includes('zip')||t.includes('rar'))return'📦';return'📁';}
+function saveFiles(){
+  safeSet('sb_files', uploadedFiles);
+  safeSet('sb_public_files', uploadedFiles.map(f=>({name:f.name,size:f.size,date:f.date,desc:f.desc,data:f.data,type:f.type})));
+}
+function renderFiles(){
+  const c=document.getElementById('filesList');
+  if(!uploadedFiles.length){c.innerHTML='<p style="font-size:13px;color:rgba(255,255,255,.25);font-weight:600;">Файлов пока нет.</p>';document.getElementById('filesCountLabel').textContent='(0)';return;}
+  document.getElementById('filesCountLabel').textContent=`(${uploadedFiles.length})`;
+  c.innerHTML=uploadedFiles.map((f,i)=>`
+    <div class="file-item">
+      <div class="file-item-icon">${getFileIcon(f.type)}</div>
+      <div class="file-item-info">
+        <div class="file-item-name">${f.name}</div>
+        <div class="file-item-meta">${f.size} · ${f.date}</div>
+        <input class="file-item-desc-input" type="text" placeholder="Описание..." value="${esc(f.desc||'')}" oninput="uploadedFiles[${i}].desc=this.value;saveFiles()"/>
+      </div>
+      <div class="file-item-actions">
+        <a href="${f.data}" download="${f.name}" class="btn btn-ghost btn-sm" style="text-decoration:none;">⬇</a>
+        <button class="btn btn-danger btn-sm" onclick="deleteFile(${i})">✕</button>
+      </div>
+    </div>`).join('');
+}
+function deleteFile(i){uploadedFiles.splice(i,1);saveFiles();renderFiles();updateStats();}
+function clearAllFiles(){if(!confirm('Удалить все файлы?'))return;uploadedFiles=[];saveFiles();renderFiles();updateStats();}
+function updateStats(){document.getElementById('stat-files').textContent=uploadedFiles.length;}
+
+/* ════ TELEGRAM ════ */
+function saveTg(){safeSet('sb_tg',{channel:v('c-tg-channel'),buy:v('c-tg-buy')});showToast('✈️ Telegram сохранён!');}
+
+/* ════ RESET ════ */
+function confirmReset(){
+  if(!confirm('Удалить ВСЕ данные?'))return;
+  const keys=['sb_inline_content','sb_files','sb_public_files','sb_tg','sb_hero_image','sb_fonts','sb_colors','sb_custom_css','sb_colors_css','sb_morph_photos','sb_habitat_photos','sb_habitat_section_bg','sb_gallery_section_bg','sb_custom_fonts','sb_lectures','sb_boarding','sb_board_photo1','sb_board_photo2'];
+  keys.forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
+  uploadedFiles=[];customFonts=[];lectures=[];boardingDates=[];boardIncludes=[];
+  renderFiles();renderCustomFontsUI();updateStats();renderLectures();renderBoardingDates();renderBoardIncludes();
+  showToast('🗑️ Данные сброшены');
+}
+function confirmResetInline(){
+  if(!confirm('Сбросить все правки текстов?'))return;
+  try{localStorage.removeItem('sb_inline_content');}catch(e){}
+  loadAllSaved();
+  showToast('↺ Правки сброшены');
+}
+
+/* ════ DOMContentLoaded ════ */
+window.addEventListener('DOMContentLoaded',()=>{
+  // Add shake animation
+  const style = document.createElement('style');
+  style.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}`;
+  document.head.appendChild(style);
+
+  // Check existing session
+  try {
+    if (localStorage.getItem('sb_admin_session') === '1') {
+      document.getElementById('loginScreen').style.display='none';
+      document.getElementById('adminApp').style.display='block';
+      initAdmin();
+    }
+  } catch(e) {
+    // localStorage not available
+    console.warn('localStorage not available:', e);
+  }
+
+  // Restore CSS overrides
+  try {
+    const css = localStorage.getItem('sb_custom_css')||'';
+    const colorCss = localStorage.getItem('sb_colors_css')||'';
+    if (css||colorCss) {
+      const s=document.createElement('style');
+      s.id='sb-admin-overrides';
+      s.textContent=css+'\n'+colorCss;
+      document.head.appendChild(s);
+    }
+  } catch(e) {}
+});
+</script>
+</body>
+</html>
