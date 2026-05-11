@@ -26,26 +26,163 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
   --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
   --safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);
   --sidebar-w:240px;--topbar-h:56px;
+
+  /* ── URL сервера верификации — замени на свой ── */
+  /* задаётся через JS: EMAIL_SERVER_URL ниже */
 }
 @media(pointer:fine){::-webkit-scrollbar{width:6px;height:6px;}::-webkit-scrollbar-track{background:rgba(255,255,255,0.03);}::-webkit-scrollbar-thumb{background:rgba(76,175,80,0.35);border-radius:3px;}::-webkit-scrollbar-thumb:hover{background:rgba(76,175,80,0.55);}}
 
-/* ═══ LOGIN ═══ */
-#loginScreen{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,#1a4a1d 0%,#0d1f0e 70%);padding:20px;padding-top:calc(20px + var(--safe-top));padding-bottom:calc(20px + var(--safe-bottom));}
-.login-box{background:var(--card);border:2px solid var(--border2);border-radius:24px;padding:44px 40px;max-width:400px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,0.5);text-align:center;}
-.login-logo{font-family:var(--ff);font-size:36px;margin-bottom:6px;color:#e0ffe2;}
-.login-logo span{color:var(--yellow);}
-.login-sub{font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:32px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;}
-.login-field{margin-bottom:18px;text-align:left;}
-.login-field label{display:block;font-size:11px;font-weight:800;color:#81C784;letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px;}
-.login-field input{width:100%;padding:13px 16px;border-radius:10px;background:rgba(255,255,255,0.06);border:2px solid var(--border);color:#e0ffe2;font-family:var(--fb);font-size:15px;font-weight:700;outline:none;transition:border-color .2s;}
-.login-field input:focus{border-color:var(--g3);}
-.btn-login{width:100%;padding:14px;border-radius:10px;background:var(--g2);border:2px solid var(--g1);color:#fff;font-family:var(--ff);font-size:18px;cursor:pointer;transition:all .2s;box-shadow:0 4px 0 var(--g1);min-height:52px;}
-.btn-login:hover{transform:translateY(2px);box-shadow:0 2px 0 var(--g1);}
-.btn-login:active{transform:translateY(4px);box-shadow:none;}
-.login-error{color:var(--orange);font-size:13px;font-weight:700;margin-top:14px;display:none;}
-.login-hint{font-size:11px;color:rgba(255,255,255,0.25);margin-top:16px;font-weight:600;}
+/* ════════════════════════════════
+   LOGIN / REGISTER SCREENS
+════════════════════════════════ */
+#loginScreen{
+  min-height:100vh;min-height:100dvh;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 40%,#1a4a1d 0%,#0d1f0e 70%);
+  padding:20px;
+  padding-top:calc(20px + var(--safe-top));
+  padding-bottom:calc(20px + var(--safe-bottom));
+}
 
-/* ═══ ADMIN APP ═══ */
+/* Анимация появления box */
+@keyframes boxIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@keyframes codeDigitIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+
+.auth-box{
+  background:var(--card);border:2px solid var(--border2);border-radius:24px;
+  padding:44px 40px;max-width:420px;width:100%;
+  box-shadow:0 24px 80px rgba(0,0,0,.5);
+  animation:boxIn .45s cubic-bezier(.34,1.56,.64,1) both;
+}
+.auth-logo{font-family:var(--ff);font-size:36px;margin-bottom:6px;color:#e0ffe2;text-align:center;}
+.auth-logo span{color:var(--yellow);}
+.auth-sub{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:28px;font-weight:800;
+  letter-spacing:.12em;text-transform:uppercase;text-align:center;}
+
+/* Tab switcher: Войти / Регистрация */
+.auth-tabs{display:flex;background:rgba(255,255,255,.05);border-radius:10px;padding:4px;margin-bottom:28px;gap:4px;}
+.auth-tab{flex:1;padding:10px;border:none;background:transparent;color:rgba(255,255,255,.4);
+  font-family:var(--ff);font-size:14px;border-radius:8px;cursor:pointer;transition:all .2s;}
+.auth-tab.active{background:var(--g2);color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.3);}
+
+/* Steps indicator */
+.reg-steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:28px;}
+.reg-step{display:flex;align-items:center;gap:0;}
+.reg-step-dot{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--ff);font-size:13px;
+  border:2px solid var(--border2);color:rgba(255,255,255,.3);
+  background:transparent;transition:all .3s;
+}
+.reg-step-dot.done{background:var(--g3);border-color:var(--g3);color:#fff;}
+.reg-step-dot.active{background:var(--g2);border-color:var(--g3);color:#fff;
+  box-shadow:0 0 0 4px rgba(76,175,80,.2);}
+.reg-step-line{width:40px;height:2px;background:var(--border);transition:background .3s;}
+.reg-step-line.done{background:var(--g3);}
+
+/* Form fields */
+.auth-field{margin-bottom:16px;text-align:left;}
+.auth-field label{display:block;font-size:11px;font-weight:800;color:#81C784;
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px;}
+.auth-field input{
+  width:100%;padding:13px 16px;border-radius:10px;
+  background:rgba(255,255,255,.06);border:2px solid var(--border);
+  color:#e0ffe2;font-family:var(--fb);font-size:15px;font-weight:700;
+  outline:none;transition:border-color .2s;
+}
+.auth-field input:focus{border-color:var(--g3);}
+.auth-field input.error{border-color:var(--red);}
+.auth-field input.success{border-color:var(--g3);background:rgba(76,175,80,.08);}
+
+/* Main action button */
+.btn-auth{
+  width:100%;padding:14px;border-radius:10px;
+  background:var(--g2);border:2px solid var(--g1);
+  color:#fff;font-family:var(--ff);font-size:18px;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 0 var(--g1);min-height:52px;
+  position:relative;overflow:hidden;
+}
+.btn-auth:hover{transform:translateY(2px);box-shadow:0 2px 0 var(--g1);}
+.btn-auth:active{transform:translateY(4px);box-shadow:none;}
+.btn-auth:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:0 4px 0 var(--g1);}
+.btn-auth.loading::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.15) 50%,transparent 100%);
+  animation:shimmer 1.2s infinite;
+}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+
+/* Ghost button */
+.btn-ghost-auth{
+  width:100%;padding:11px;border-radius:10px;
+  background:transparent;border:2px solid var(--border);
+  color:rgba(255,255,255,.45);font-family:var(--ff);font-size:14px;
+  cursor:pointer;transition:all .2s;margin-top:10px;min-height:44px;
+}
+.btn-ghost-auth:hover{border-color:var(--border2);color:rgba(255,255,255,.7);}
+
+/* Message areas */
+.auth-error{color:var(--orange);font-size:13px;font-weight:700;margin-top:12px;
+  display:none;text-align:center;padding:10px;background:rgba(255,112,67,.1);
+  border:1px solid rgba(255,112,67,.3);border-radius:8px;}
+.auth-success{color:#81C784;font-size:13px;font-weight:700;margin-top:12px;
+  display:none;text-align:center;padding:10px;background:rgba(76,175,80,.1);
+  border:1px solid rgba(76,175,80,.3);border-radius:8px;}
+.auth-hint{font-size:11px;color:rgba(255,255,255,.25);margin-top:16px;font-weight:600;text-align:center;}
+
+/* ── OTP Code Input ── */
+.otp-wrap{margin-bottom:20px;}
+.otp-label{font-size:11px;font-weight:800;color:#81C784;letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:12px;display:block;}
+.otp-inputs{display:flex;gap:10px;justify-content:center;}
+.otp-digit{
+  width:52px;height:62px;border-radius:12px;
+  background:rgba(255,255,255,.06);border:2px solid var(--border);
+  color:#e0ffe2;font-family:var(--ff);font-size:28px;
+  text-align:center;outline:none;
+  transition:border-color .2s,background .2s,transform .15s;
+  caret-color:var(--g3);
+  /* Убираем стрелки у number input */
+  -moz-appearance:textfield;
+}
+.otp-digit::-webkit-outer-spin-button,
+.otp-digit::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.otp-digit:focus{border-color:var(--g3);background:rgba(76,175,80,.1);transform:scale(1.05);}
+.otp-digit.filled{border-color:var(--g3);animation:codeDigitIn .2s ease both;}
+.otp-digit.error{border-color:var(--red);background:rgba(229,57,53,.08);}
+
+/* Resend timer */
+.otp-resend{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:14px;font-size:12px;font-weight:700;color:rgba(255,255,255,.4);
+}
+.otp-resend-btn{
+  background:none;border:none;color:var(--g3);font-family:var(--fb);
+  font-size:12px;font-weight:800;cursor:pointer;padding:0;
+  text-decoration:underline;transition:opacity .2s;
+}
+.otp-resend-btn:disabled{opacity:.4;cursor:not-allowed;text-decoration:none;}
+
+/* Email confirmed badge */
+.email-verified-badge{
+  display:flex;align-items:center;gap:10px;padding:12px 16px;
+  background:rgba(76,175,80,.12);border:2px solid rgba(76,175,80,.4);
+  border-radius:10px;margin-bottom:16px;
+}
+.email-verified-badge span:first-child{font-size:20px;}
+.email-verified-badge-text{flex:1;}
+.email-verified-badge-title{font-size:13px;font-weight:800;color:#81C784;}
+.email-verified-badge-email{font-size:12px;color:rgba(255,255,255,.45);margin-top:1px;}
+
+/* Password strength */
+.pass-strength-bar{height:4px;border-radius:2px;background:var(--border);margin-top:6px;overflow:hidden;}
+.pass-strength-fill{height:100%;border-radius:2px;transition:width .3s,background .3s;width:0;}
+.pass-strength-label{font-size:10px;font-weight:800;color:rgba(255,255,255,.3);margin-top:4px;text-align:right;}
+
+/* ════ ADMIN APP ════ */
 #adminApp{display:none;}
 
 /* ═══ TOPBAR ═══ */
@@ -144,7 +281,23 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
 .item-card-del{margin-left:auto;background:transparent;border:2px solid rgba(229,57,53,.3);color:rgba(229,57,53,.6);font-size:11px;font-weight:800;padding:4px 10px;border-radius:6px;cursor:pointer;transition:all .2s;min-height:28px;}
 .item-card-del:hover{background:var(--red);border-color:var(--red);color:#fff;}
 
-/* ═══ LECTURE / BOARDING EDITOR ═══ */
+/* ═══ USERS TABLE ═══ */
+.users-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.users-table{width:100%;border-collapse:collapse;font-size:13px;}
+.users-table th{font-size:10px;font-weight:800;color:rgba(255,255,255,.35);letter-spacing:.08em;
+  text-transform:uppercase;padding:8px 12px;border-bottom:2px solid var(--border);text-align:left;}
+.users-table td{padding:11px 12px;border-bottom:1px solid rgba(76,175,80,.08);color:#e0ffe2;font-weight:600;vertical-align:middle;}
+.users-table tr:hover td{background:rgba(76,175,80,.04);}
+.user-status-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;
+  padding:3px 10px;border-radius:99px;letter-spacing:.06em;}
+.user-status-badge.verified{background:rgba(76,175,80,.2);color:#81C784;border:1px solid rgba(76,175,80,.4);}
+.user-status-badge.pending{background:rgba(253,216,53,.15);color:var(--yellow);border:1px solid rgba(253,216,53,.3);}
+.user-status-badge.blocked{background:rgba(229,57,53,.15);color:var(--red);border:1px solid rgba(229,57,53,.3);}
+.user-role-badge{font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;
+  background:rgba(34,158,217,.15);color:#64B5F6;border:1px solid rgba(34,158,217,.25);}
+.users-table .actions-cell{display:flex;gap:6px;align-items:center;}
+
+/* ═══ LECTURE / BOARDING ═══ */
 .lecture-card{background:rgba(255,255,255,.04);border:2px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;position:relative;}
 .lecture-card-header{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
 .lecture-badge{font-family:var(--ff);font-size:11px;padding:3px 12px;border-radius:99px;}
@@ -160,11 +313,8 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
 .date-slot-tag.booked{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);color:rgba(255,255,255,.35);text-decoration:line-through;}
 .date-slot-del{background:none;border:none;color:rgba(229,57,53,.6);cursor:pointer;font-size:13px;padding:0;line-height:1;transition:color .2s;}
 .date-slot-del:hover{color:var(--red);}
-.date-slot-tag.booked .date-slot-del{color:rgba(255,255,255,.2);}
-.date-slot-tag.booked .date-slot-del:hover{color:var(--red);}
 .toggle-booked-btn{background:transparent;border:1.5px solid rgba(255,255,255,.15);color:rgba(255,255,255,.35);font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;cursor:pointer;transition:all .2s;}
 .toggle-booked-btn:hover{border-color:var(--g3);color:var(--g3);}
-
 .add-date-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
 .add-date-row input[type="date"]{flex:1;padding:8px 12px;background:rgba(255,255,255,.05);border:2px solid var(--border);border-radius:8px;color:#e0ffe2;font-family:var(--fb);font-size:12px;font-weight:600;outline:none;color-scheme:dark;}
 .add-date-row input[type="date"]:focus{border-color:var(--g3);}
@@ -200,14 +350,6 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
 .morph-color-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
 .morph-swatch-preview{width:44px;height:44px;border-radius:9px;border:2px solid var(--border);transition:background .2s;flex-shrink:0;}
 
-/* ═══ EDIT MODE CARD ═══ */
-.edit-mode-card{border:2px solid rgba(253,216,53,.5);background:linear-gradient(135deg,rgba(21,101,192,.15),rgba(13,31,14,.8));}
-.edit-mode-features{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:18px;}
-.edit-feature{background:rgba(255,255,255,.05);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:8px;}
-.edit-feature-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
-.edit-feature-title{font-size:13px;font-weight:800;color:#e0ffe2;margin-bottom:2px;}
-.edit-feature-desc{font-size:11px;color:rgba(255,255,255,.4);line-height:1.5;}
-
 /* ═══ COLOR GRID ═══ */
 .color-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:14px;}
 .color-item{background:rgba(255,255,255,.04);border:2px solid var(--border);border-radius:10px;padding:12px;}
@@ -216,13 +358,6 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
 .color-picker-row input[type="color"]{width:40px;height:34px;border-radius:7px;border:2px solid var(--border);background:transparent;cursor:pointer;padding:2px;-webkit-appearance:none;appearance:none;}
 .color-value{font-family:monospace;font-size:12px;color:var(--g3);font-weight:700;}
 .color-preview-bar{height:6px;border-radius:3px;margin-top:7px;transition:background .2s;}
-
-/* ═══ COLORING ITEM ═══ */
-.coloring-item{display:flex;align-items:center;gap:10px;padding:11px 13px;background:rgba(255,255,255,.03);border:2px solid var(--border);border-radius:10px;margin-bottom:7px;}
-.coloring-item svg{width:56px;height:40px;border-radius:6px;background:#fff;flex-shrink:0;}
-.coloring-item-info{flex:1;}
-.coloring-item-name{font-size:13px;font-weight:700;color:#e0ffe2;}
-.coloring-item-desc{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;}
 
 /* ═══ FONT STUFF ═══ */
 .font-selector-wrap{position:relative;}
@@ -243,13 +378,6 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
 .custom-font-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;}
 .custom-font-item-name{font-size:12px;font-weight:800;color:#e0ffe2;flex:1;}
 
-/* ═══ SECTION BADGE ═══ */
-.section-badge{display:inline-block;font-size:11px;font-weight:800;padding:3px 12px;border-radius:99px;letter-spacing:.07em;margin-bottom:6px;}
-.badge-green{background:rgba(76,175,80,.2);color:#81C784;border:1px solid rgba(76,175,80,.3);}
-.badge-yellow{background:rgba(253,216,53,.15);color:var(--yellow);border:1px solid rgba(253,216,53,.25);}
-.badge-blue{background:rgba(34,158,217,.15);color:#64B5F6;border:1px solid rgba(34,158,217,.25);}
-.badge-orange{background:rgba(255,112,67,.15);color:var(--orange);border:1px solid rgba(255,112,67,.25);}
-
 /* ═══ TOAST ═══ */
 #toast{position:fixed;bottom:calc(24px + var(--safe-bottom));right:24px;background:var(--g2);border:2px solid var(--g3);color:#fff;font-family:var(--ff);font-size:15px;padding:12px 22px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:9999;opacity:0;transform:translateY(20px);transition:all .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;max-width:calc(100vw - 48px);}
 #toast.show{opacity:1;transform:translateY(0);}
@@ -269,33 +397,183 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
   .adm-logo{font-size:17px;}
   .adm-topbar-btn{font-size:11px;padding:7px 10px;}
   .color-grid{grid-template-columns:1fr 1fr;}
-  .edit-mode-features{grid-template-columns:1fr;}
-  .stats-row{grid-template-columns:1fr 1fr;}
+  .auth-box{padding:32px 24px;}
+  .otp-digit{width:44px;height:54px;font-size:24px;}
 }
 </style>
 </head>
 <body>
 
-<!-- ═══ LOGIN ═══ -->
+<!-- ════════════════════════════════════
+     AUTH SCREEN (Login + Register)
+════════════════════════════════════ -->
 <div id="loginScreen">
-  <div class="login-box">
-    <div class="login-logo">🦎 shelby<span>-book</span></div>
-    <p class="login-sub">Панель администратора v3</p>
-    <div class="login-field">
-      <label>Логин</label>
-      <input type="text" id="loginUser" placeholder="admin" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"/>
-    </div>
-    <div class="login-field">
-      <label>Пароль</label>
-      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
-    </div>
-    <button class="btn-login" onclick="doLogin()">🔐 Войти</button>
-    <p class="login-error" id="loginError">Неверный логин или пароль</p>
-    <p class="login-hint">По умолчанию: shelby / agama2026</p>
-  </div>
-</div>
+  <div class="auth-box" id="authBox">
+    <div class="auth-logo">🦎 shelby<span>-book</span></div>
+    <p class="auth-sub" id="authSubtitle">Панель администратора v3</p>
 
-<!-- ═══ ADMIN APP ═══ -->
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">🔐 Войти</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">✨ Регистрация</button>
+    </div>
+
+    <!-- ══ LOGIN FORM ══ -->
+    <div id="loginForm">
+      <div class="auth-field">
+        <label>Логин</label>
+        <input type="text" id="loginUser" placeholder="admin" autocomplete="off"
+               autocapitalize="none" autocorrect="off" spellcheck="false"/>
+      </div>
+      <div class="auth-field">
+        <label>Пароль</label>
+        <input type="password" id="loginPass" placeholder="••••••••"
+               autocomplete="current-password"
+               onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <button class="btn-auth" onclick="doLogin()" id="btnLogin">🔐 Войти</button>
+      <div class="auth-error" id="loginError">Неверный логин или пароль</div>
+      <div class="auth-hint">По умолчанию: shelby / agama2026</div>
+    </div>
+
+    <!-- ══ REGISTER FORM — Step 1: Email ══ -->
+    <div id="regStep1" style="display:none;">
+      <!-- Steps -->
+      <div class="reg-steps">
+        <div class="reg-step">
+          <div class="reg-step-dot active" id="rsDot1">1</div>
+        </div>
+        <div class="reg-step-line" id="rsLine1"></div>
+        <div class="reg-step">
+          <div class="reg-step-dot" id="rsDot2">2</div>
+        </div>
+        <div class="reg-step-line" id="rsLine2"></div>
+        <div class="reg-step">
+          <div class="reg-step-dot" id="rsDot3">3</div>
+        </div>
+      </div>
+
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="you@company.com"
+               autocomplete="email" oninput="clearRegErrors()"
+               onkeydown="if(event.key==='Enter')sendVerificationCode()"/>
+      </div>
+      <button class="btn-auth" id="btnSendCode" onclick="sendVerificationCode()">
+        📨 Отправить код
+      </button>
+      <div class="auth-error" id="regStep1Error"></div>
+      <div class="auth-success" id="regStep1Success"></div>
+    </div>
+
+    <!-- ══ REGISTER FORM — Step 2: OTP ══ -->
+    <div id="regStep2" style="display:none;">
+      <div class="reg-steps">
+        <div class="reg-step">
+          <div class="reg-step-dot done">✓</div>
+        </div>
+        <div class="reg-step-line done"></div>
+        <div class="reg-step">
+          <div class="reg-step-dot active" id="rsDot2b">2</div>
+        </div>
+        <div class="reg-step-line" id="rsLine2b"></div>
+        <div class="reg-step">
+          <div class="reg-step-dot" id="rsDot3b">3</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:13px;color:rgba(255,255,255,.45);font-weight:700;">
+          Код отправлен на <strong style="color:#81C784;" id="regEmailDisplay"></strong>
+        </div>
+      </div>
+
+      <div class="otp-wrap">
+        <span class="otp-label">Введи 6-значный код</span>
+        <div class="otp-inputs" id="otpInputs">
+          <input class="otp-digit" type="number" maxlength="1" min="0" max="9"
+                 oninput="otpInput(this,0)" onkeydown="otpKeydown(event,0)" id="otp0"/>
+          <input class="otp-digit" type="number" maxlength="1" min="0" max="9"
+                 oninput="otpInput(this,1)" onkeydown="otpKeydown(event,1)" id="otp1"/>
+          <input class="otp-digit" type="number" maxlength="1" min="0" max="9"
+                 oninput="otpInput(this,2)" onkeydown="otpKeydown(event,2)" id="otp2"/>
+          <input class="otp-digit" type="number" maxlength="1" min="0" max="9"
+                 oninput="otpInput(this,3)" onkeydown="otpKeydown(event,3)" id="otp3"/>
+          <input class="otp-digit" type="number" maxlength="1" min="0" max="9"
+                 oninput="otpInput(this,4)" onkeydown="otpKeydown(event,4)" id="otp4"/>
+          <input class="otp-digit" type="number" maxlength="1" min="0" max="9"
+                 oninput="otpInput(this,5)" onkeydown="otpKeydown(event,5)" id="otp5"/>
+        </div>
+      </div>
+
+      <button class="btn-auth" id="btnVerifyCode" onclick="verifyCode()">
+        ✅ Подтвердить email
+      </button>
+      <div class="auth-error" id="regStep2Error"></div>
+
+      <div class="otp-resend">
+        <span id="resendTimerLabel">Повторная отправка через <strong id="resendTimer">60</strong>с</span>
+        <button class="otp-resend-btn" id="btnResend" onclick="resendCode()" disabled>
+          Отправить снова
+        </button>
+      </div>
+
+      <button class="btn-ghost-auth" onclick="goToRegStep1()">← Изменить email</button>
+    </div>
+
+    <!-- ══ REGISTER FORM — Step 3: Create Account ══ -->
+    <div id="regStep3" style="display:none;">
+      <div class="reg-steps">
+        <div class="reg-step"><div class="reg-step-dot done">✓</div></div>
+        <div class="reg-step-line done"></div>
+        <div class="reg-step"><div class="reg-step-dot done">✓</div></div>
+        <div class="reg-step-line done"></div>
+        <div class="reg-step"><div class="reg-step-dot active">3</div></div>
+      </div>
+
+      <!-- Email verified badge -->
+      <div class="email-verified-badge">
+        <span>✅</span>
+        <div class="email-verified-badge-text">
+          <div class="email-verified-badge-title">Email подтверждён!</div>
+          <div class="email-verified-badge-email" id="verifiedEmailLabel"></div>
+        </div>
+      </div>
+
+      <div class="auth-field">
+        <label>Логин</label>
+        <input type="text" id="regUsername" placeholder="Имя пользователя"
+               autocomplete="off" autocapitalize="none" autocorrect="off"
+               oninput="clearRegErrors()"/>
+      </div>
+      <div class="auth-field">
+        <label>Пароль</label>
+        <input type="password" id="regPassword" placeholder="Минимум 6 символов"
+               autocomplete="new-password" oninput="updatePassStrength(this.value)"/>
+        <div class="pass-strength-bar">
+          <div class="pass-strength-fill" id="passStrengthFill"></div>
+        </div>
+        <div class="pass-strength-label" id="passStrengthLabel"></div>
+      </div>
+      <div class="auth-field">
+        <label>Повтор пароля</label>
+        <input type="password" id="regPassword2" placeholder="Повтори пароль"
+               autocomplete="new-password"
+               onkeydown="if(event.key==='Enter')completeRegistration()"/>
+      </div>
+
+      <button class="btn-auth" id="btnCompleteReg" onclick="completeRegistration()">
+        🚀 Создать аккаунт
+      </button>
+      <div class="auth-error" id="regStep3Error"></div>
+    </div>
+
+  </div><!-- /auth-box -->
+</div><!-- /loginScreen -->
+
+<!-- ════════════════════════════════════
+     ADMIN APP
+════════════════════════════════════ -->
 <div id="adminApp">
   <div class="adm-topbar">
     <button class="adm-hamburger" id="admHamburger" onclick="toggleSidebar()" aria-label="Меню">
@@ -344,9 +622,9 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
 
       <div class="sidebar-sep"></div>
       <div class="sidebar-label">Прочее</div>
-      <div class="adm-nav-item" onclick="showPanel('colorings',this)"><span class="adm-nav-icon">🖼️</span> Раскраски</div>
       <div class="adm-nav-item" onclick="showPanel('files',this)"><span class="adm-nav-icon">📁</span> Файлы</div>
       <div class="adm-nav-item" onclick="showPanel('tg',this)"><span class="adm-nav-icon">✈️</span> Telegram</div>
+      <div class="adm-nav-item" onclick="showPanel('users',this)" style="border-left:3px solid var(--yellow);margin-left:-2px;padding-left:10px;"><span class="adm-nav-icon">👥</span> Пользователи</div>
       <div class="adm-nav-item" onclick="showPanel('settings',this)"><span class="adm-nav-icon">⚙️</span> Настройки</div>
     </nav>
 
@@ -359,40 +637,66 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
         <div class="stats-row">
           <div class="stat-card"><div class="stat-num">8</div><div class="stat-label">Разделов</div></div>
           <div class="stat-card"><div class="stat-num" id="stat-files">0</div><div class="stat-label">Файлов</div></div>
-          <div class="stat-card"><div class="stat-num" id="stat-morphs">6</div><div class="stat-label">Морфов</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-users">0</div><div class="stat-label">Пользователей</div></div>
           <div class="stat-card"><div class="stat-num">💚</div><div class="stat-label">Онлайн</div></div>
         </div>
         <div class="adm-card">
           <h3>⚡ Быстрые действия</h3>
           <div class="btn-row">
             <button class="btn btn-green" onclick="openEditMode()">✏️ Редактировать сайт</button>
-            <button class="btn btn-blue" onclick="showPanel('lectures',document.querySelectorAll('.adm-nav-item')[13])">📚 Лекции</button>
-            <button class="btn btn-yellow" onclick="showPanel('boarding',document.querySelectorAll('.adm-nav-item')[14])">🏡 Передержка</button>
-            <button class="btn btn-ghost" onclick="showPanel('files',document.querySelectorAll('.adm-nav-item')[18])">📁 Файлы</button>
+            <button class="btn btn-blue" onclick="showPanel('lectures',document.querySelectorAll('.adm-nav-item')[9])">📚 Лекции</button>
+            <button class="btn btn-yellow" onclick="showPanel('boarding',document.querySelectorAll('.adm-nav-item')[10])">🏡 Передержка</button>
+            <button class="btn btn-ghost" onclick="showPanel('users',document.querySelectorAll('.adm-nav-item')[16])">👥 Пользователи</button>
           </div>
         </div>
         <div class="adm-card">
-          <h3>🦎 Секретный доступ</h3>
-          <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.7;">На сайте нажми <strong style="color:#81C784">5 раз</strong> на 🦎 в верхнем левом углу — откроется эта панель администратора. Никаких видимых кнопок для обычных посетителей!</p>
-        </div>
-        <div class="adm-card">
-          <h3>🆕 Что нового в v3</h3>
-          <ul style="font-size:13px;color:rgba(255,255,255,.55);line-height:2;padding-left:18px;">
-            <li>✅ <strong style="color:#81C784">Раздел «Лекции»</strong> — фото, описание, свободные даты</li>
-            <li>✅ <strong style="color:#81C784">Раздел «Передержка»</strong> — фото, описание, управление датами</li>
-            <li>✅ Даты помечаются серыми при <strong style="color:#81C784">бронировании</strong></li>
-            <li>✅ Раздел <strong style="color:#81C784">«Файлы»</strong> — файлы видны на сайте</li>
-            <li>✅ Фото в морфах и среде обитания</li>
-            <li>✅ Оптимизация под <strong style="color:#81C784">Mac · iPhone · Android</strong></li>
-          </ul>
+          <h3>🆕 Верификация email включена</h3>
+          <p style="font-size:13px;color:rgba(255,255,255,.55);line-height:1.7;">
+            Новые пользователи проходят верификацию email через 6-значный код.<br/>
+            Код отправляется с вашей Gmail-почты через Node.js сервер.<br/>
+            Все зарегистрированные пользователи видны в разделе <strong style="color:#81C784;">👥 Пользователи</strong>.
+          </p>
+          <div style="margin-top:12px;padding:10px 14px;background:rgba(76,175,80,.08);border:1px solid var(--border2);border-radius:8px;font-size:12px;font-weight:700;color:#81C784;">
+            🖥️ Сервер: <span id="serverUrlDisplay" style="color:rgba(255,255,255,.5);">не задан</span>
+          </div>
         </div>
       </div>
 
-      <!-- ════ EDIT MODE ════ -->
+      <!-- ════ USERS PANEL ════ -->
+      <div class="adm-panel" id="panel-users">
+        <div class="adm-section-title">👥 Пользователи</div>
+        <div class="adm-section-sub">Все зарегистрированные аккаунты</div>
+
+        <div class="adm-card">
+          <h3>📋 Список пользователей <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,.3);" id="usersCountLabel">(0)</span></h3>
+          <div class="users-table-wrap">
+            <table class="users-table" id="usersTable">
+              <thead>
+                <tr>
+                  <th>Логин</th>
+                  <th>Email</th>
+                  <th>Роль</th>
+                  <th>Статус</th>
+                  <th>Дата</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:24px;">Пользователей пока нет</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-danger btn-sm" onclick="clearAllUsers()">🗑️ Удалить всех (кроме admin)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ EDITMODE ════ -->
       <div class="adm-panel" id="panel-editmode">
         <div class="adm-section-title">✏️ Режим правки сайта</div>
         <div class="adm-section-sub">Открывает сайт с панелью инлайн-редактирования</div>
-        <div class="adm-card edit-mode-card">
+        <div class="adm-card" style="border-color:rgba(253,216,53,.4);">
           <h3 class="yellow">🚀 Запустить редактор</h3>
           <div class="btn-row" style="margin-top:0;">
             <button class="btn btn-blue" onclick="openEditMode()" style="font-size:16px;padding:13px 28px;">✏️ Открыть редактор сайта</button>
@@ -410,7 +714,7 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
       <!-- ════ HERO ════ -->
       <div class="adm-panel" id="panel-hero">
         <div class="adm-section-title">🚀 Hero</div>
-        <div class="adm-section-sub">Главный экран — заголовки, описание, фото</div>
+        <div class="adm-section-sub">Главный экран</div>
         <div class="adm-card" style="border-color:rgba(253,216,53,.4);">
           <h3 class="yellow">🖼️ Главная фотография</h3>
           <div id="heroImgPreviewWrap" style="display:none;margin-bottom:14px;">
@@ -441,11 +745,10 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
       <!-- ════ ABOUT ════ -->
       <div class="adm-panel" id="panel-about">
         <div class="adm-section-title">🔬 О виде</div>
-        <div class="adm-section-sub">Карточки, систематика, цитата</div>
         <div class="adm-card">
           <h3>🃏 Карточки «О виде»</h3>
           <div id="aboutCardsList"></div>
-          <button class="btn btn-green btn-sm" style="margin-top:6px;" onclick="addAboutCard()">➕ Добавить карточку</button>
+          <button class="btn btn-green btn-sm" style="margin-top:6px;" onclick="addAboutCard()">➕ Добавить</button>
         </div>
         <div class="adm-card">
           <h3>📊 Систематика</h3>
@@ -457,10 +760,6 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
             <div class="adm-field"><label>Род</label><input type="text" id="tx5"/></div>
             <div class="adm-field"><label>Вид</label><input type="text" id="tx6"/></div>
           </div>
-        </div>
-        <div class="adm-card">
-          <h3>💬 Цитата</h3>
-          <div class="adm-field"><textarea id="c-about-quote"></textarea></div>
           <button class="btn btn-green" onclick="saveSection('about')">💾 Сохранить «О виде»</button>
         </div>
       </div>
@@ -468,15 +767,11 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
       <!-- ════ HABITAT ════ -->
       <div class="adm-panel" id="panel-habitat">
         <div class="adm-section-title">🌍 Среда обитания</div>
-        <div class="adm-section-sub">Карточки с фото</div>
         <div class="adm-card">
-          <div class="adm-field"><label>Заголовок раздела (выделенная часть)</label><input type="text" id="c-hab-em"/></div>
-        </div>
-        <div class="adm-card">
-          <h3>🌿 Карточки среды</h3>
+          <div class="adm-field"><label>Заголовок раздела</label><input type="text" id="c-hab-em"/></div>
           <div id="habitatCardsList"></div>
           <div class="btn-row">
-            <button class="btn btn-green btn-sm" onclick="addHabitatCard()">➕ Добавить карточку</button>
+            <button class="btn btn-green btn-sm" onclick="addHabitatCard()">➕ Добавить</button>
             <button class="btn btn-green" onclick="saveSection('habitat')">💾 Сохранить</button>
           </div>
         </div>
@@ -484,13 +779,11 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
 
       <!-- ════ CARE ════ -->
       <div class="adm-panel" id="panel-care">
-        <div class="adm-section-title">🏠 Уход и содержание</div>
-        <div class="adm-section-sub">Шаги ухода за агамой</div>
+        <div class="adm-section-title">🏠 Уход</div>
         <div class="adm-card">
-          <h3>📋 Шаги ухода</h3>
           <div id="careCardsList"></div>
           <div class="btn-row">
-            <button class="btn btn-green btn-sm" onclick="addCareCard()">➕ Добавить шаг</button>
+            <button class="btn btn-green btn-sm" onclick="addCareCard()">➕ Добавить</button>
             <button class="btn btn-green" onclick="saveSection('care')">💾 Сохранить</button>
           </div>
         </div>
@@ -499,12 +792,8 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
       <!-- ════ GALLERY ════ -->
       <div class="adm-panel" id="panel-gallery">
         <div class="adm-section-title">🦎 Галерея / Морфы</div>
-        <div class="adm-section-sub">Карточки морфов с фото и цветом</div>
         <div class="adm-card">
-          <div class="adm-field"><label>Заголовок галереи (выделенная часть)</label><input type="text" id="c-gal-em"/></div>
-        </div>
-        <div class="adm-card">
-          <h3>🦎 Морфы</h3>
+          <div class="adm-field"><label>Заголовок галереи</label><input type="text" id="c-gal-em"/></div>
           <div id="morphCardsList"></div>
           <div class="btn-row">
             <button class="btn btn-green btn-sm" onclick="addMorphCard()">➕ Добавить морф</button>
@@ -516,9 +805,7 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
       <!-- ════ FACTS ════ -->
       <div class="adm-panel" id="panel-facts">
         <div class="adm-section-title">⚡ Факты</div>
-        <div class="adm-section-sub">Карточки с фактами</div>
         <div class="adm-card">
-          <h3>📝 Факты</h3>
           <div id="factsCardsList"></div>
           <div class="btn-row">
             <button class="btn btn-green btn-sm" onclick="addFactCard()">➕ Добавить факт</button>
@@ -531,111 +818,86 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
       <div class="adm-panel" id="panel-footer">
         <div class="adm-section-title">🦶 Подвал</div>
         <div class="adm-card">
-          <div class="adm-field"><label>Tagline (слоган)</label><input type="text" id="c-footer-tagline"/></div>
-          <div class="adm-field"><label>Copyright (левый угол)</label><input type="text" id="c-footer-copy"/></div>
-          <div class="adm-field"><label>Подпись (правый угол)</label><input type="text" id="c-footer-sub"/></div>
-          <button class="btn btn-green" onclick="saveSection('footer')">💾 Сохранить подвал</button>
+          <div class="adm-field"><label>Tagline</label><input type="text" id="c-footer-tagline"/></div>
+          <div class="adm-field"><label>Copyright</label><input type="text" id="c-footer-copy"/></div>
+          <div class="adm-field"><label>Подпись</label><input type="text" id="c-footer-sub"/></div>
+          <button class="btn btn-green" onclick="saveSection('footer')">💾 Сохранить</button>
         </div>
       </div>
 
-      <!-- ════ ЛЕКЦИИ ════ -->
+      <!-- ════ LECTURES ════ -->
       <div class="adm-panel" id="panel-lectures">
         <div class="adm-section-title">📚 Лекции</div>
-        <div class="adm-section-sub">Добавляй лекции, фото, описание и доступные даты</div>
-
         <div class="adm-card" style="border-color:rgba(34,158,217,.4);">
-          <h3 class="blue">📝 Общее описание раздела «Лекции»</h3>
-          <div class="adm-field"><label>Заголовок раздела</label><input type="text" id="lec-section-title" placeholder="Наши лекции об агамах 🦎"/></div>
-          <div class="adm-field"><label>Подзаголовок</label><textarea id="lec-section-desc" placeholder="Приходи на наши живые встречи и узнай всё о бородатых агамах!"></textarea></div>
+          <h3 class="blue">📝 Общее описание</h3>
+          <div class="adm-field"><label>Заголовок</label><input type="text" id="lec-section-title"/></div>
+          <div class="adm-field"><label>Подзаголовок</label><textarea id="lec-section-desc"></textarea></div>
         </div>
-
         <div class="adm-card">
           <h3>📚 Список лекций</h3>
-          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px;">Добавляй лекции. Для каждой можно загрузить фото, написать описание и указать свободные даты. Забронированные даты выглядят серыми.</p>
           <div id="lecturesList"></div>
           <div class="btn-row">
             <button class="btn btn-blue btn-sm" onclick="addLecture()">➕ Добавить лекцию</button>
-            <button class="btn btn-green" onclick="saveLectures()">💾 Сохранить лекции</button>
+            <button class="btn btn-green" onclick="saveLectures()">💾 Сохранить</button>
           </div>
         </div>
       </div>
 
-      <!-- ════ ПЕРЕДЕРЖКА ════ -->
+      <!-- ════ BOARDING ════ -->
       <div class="adm-panel" id="panel-boarding">
         <div class="adm-section-title">🏡 Передержка</div>
-        <div class="adm-section-sub">Фото, описание, управление свободными датами</div>
-
         <div class="adm-card" style="border-color:rgba(253,216,53,.4);">
-          <h3 class="yellow">📝 Общее описание раздела «Передержка»</h3>
-          <div class="adm-field"><label>Заголовок раздела</label><input type="text" id="board-section-title" placeholder="Передержка агамы 🏡"/></div>
-          <div class="adm-field"><label>Описание</label><textarea id="board-section-desc" placeholder="Уедешь в отпуск? Мы с любовью присмотрим за твоим питомцем!"></textarea></div>
+          <h3 class="yellow">📝 Описание</h3>
+          <div class="adm-field"><label>Заголовок</label><input type="text" id="board-section-title"/></div>
+          <div class="adm-field"><label>Описание</label><textarea id="board-section-desc"></textarea></div>
         </div>
-
         <div class="adm-card">
-          <h3>📷 Фото передержки</h3>
+          <h3>📷 Фото</h3>
           <div class="adm-grid-2">
             <div>
               <div style="font-size:11px;font-weight:800;color:#81C784;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Главное фото</div>
               <div class="photo-slot" id="boardPhoto1Slot" onclick="triggerBoardPhoto('boardPhoto1Input','boardPhoto1Slot','sb_board_photo1')">
-                <div class="photo-slot-icon">📸</div>
-                <div class="photo-slot-label">Загрузить фото</div>
+                <div class="photo-slot-icon">📸</div><div class="photo-slot-label">Загрузить фото</div>
                 <button class="photo-slot-remove" onclick="removeBoardPhoto(event,'boardPhoto1Slot','sb_board_photo1')">✕</button>
               </div>
               <input type="file" id="boardPhoto1Input" accept="image/*" style="display:none" onchange="handleBoardPhotoUpload(this,'boardPhoto1Slot','sb_board_photo1')"/>
             </div>
             <div>
-              <div style="font-size:11px;font-weight:800;color:#81C784;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Фото 2 (дополнительное)</div>
+              <div style="font-size:11px;font-weight:800;color:#81C784;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Фото 2</div>
               <div class="photo-slot" id="boardPhoto2Slot" onclick="triggerBoardPhoto('boardPhoto2Input','boardPhoto2Slot','sb_board_photo2')">
-                <div class="photo-slot-icon">📸</div>
-                <div class="photo-slot-label">Загрузить фото</div>
+                <div class="photo-slot-icon">📸</div><div class="photo-slot-label">Загрузить фото</div>
                 <button class="photo-slot-remove" onclick="removeBoardPhoto(event,'boardPhoto2Slot','sb_board_photo2')">✕</button>
               </div>
               <input type="file" id="boardPhoto2Input" accept="image/*" style="display:none" onchange="handleBoardPhotoUpload(this,'boardPhoto2Slot','sb_board_photo2')"/>
             </div>
           </div>
         </div>
-
         <div class="adm-card">
           <h3>📋 Что включено</h3>
-          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px;">Список того что входит в передержку (отображается буллетами на сайте)</p>
           <div id="boardIncludesList"></div>
           <button class="btn btn-yellow btn-sm" style="margin-top:8px;" onclick="addBoardInclude()">➕ Добавить пункт</button>
         </div>
-
         <div class="adm-card">
-          <h3>📅 Управление датами передержки</h3>
-          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px;">Добавляй свободные даты. Отмечай забронированные — они становятся серыми.</p>
-          <div class="date-slots-title">Текущие даты:</div>
+          <h3>📅 Даты</h3>
           <div id="boardingDatesList" class="date-slots-list"></div>
           <div class="add-date-row">
-            <input type="date" id="boardDateInput" />
+            <input type="date" id="boardDateInput"/>
             <button class="btn btn-yellow btn-sm" onclick="addBoardDate()">➕ Добавить дату</button>
           </div>
         </div>
-
         <div class="adm-card">
           <h3>💰 Цена и контакты</h3>
           <div class="adm-grid-2">
-            <div class="adm-field"><label>Цена в сутки</label><input type="text" id="board-price" placeholder="500 ₽/сутки"/></div>
-            <div class="adm-field"><label>Контакт для записи</label><input type="text" id="board-contact" placeholder="@justshelby_agama"/></div>
+            <div class="adm-field"><label>Цена в сутки</label><input type="text" id="board-price"/></div>
+            <div class="adm-field"><label>Контакт</label><input type="text" id="board-contact"/></div>
           </div>
-          <button class="btn btn-green" onclick="saveBoarding()">💾 Сохранить передержку</button>
+          <button class="btn btn-green" onclick="saveBoarding()">💾 Сохранить</button>
         </div>
       </div>
 
       <!-- ════ FONTS ════ -->
       <div class="adm-panel" id="panel-fonts">
         <div class="adm-section-title">✍️ Шрифты</div>
-        <div class="adm-section-sub">Выбор и загрузка шрифтов</div>
-        <div class="adm-card" style="border-color:rgba(253,216,53,.4);">
-          <h3 class="yellow">📂 Загрузить свой шрифт</h3>
-          <div class="upload-area" onclick="document.getElementById('customFontInput').click()" style="margin-bottom:12px;">
-            <div class="upload-area-icon">📎</div>
-            <p>Нажми для загрузки шрифта<br/><span>.ttf · .otf · .woff · .woff2</span></p>
-          </div>
-          <input type="file" id="customFontInput" accept=".ttf,.otf,.woff,.woff2" multiple style="display:none" onchange="handleCustomFontUpload(this)"/>
-          <div id="customFontsList"></div>
-        </div>
         <div class="adm-card">
           <h3>🎯 Заголовочный шрифт</h3>
           <div class="font-selector-wrap">
@@ -664,7 +926,7 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
             </div>
           </div>
         </div>
-        <button class="btn btn-green" onclick="applyAndSaveFonts()" style="font-size:15px;">💾 Применить шрифты на сайте</button>
+        <button class="btn btn-green" onclick="applyAndSaveFonts()">💾 Применить шрифты</button>
       </div>
 
       <!-- ════ COLORS ════ -->
@@ -678,53 +940,14 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
               <div class="color-picker-row"><input type="color" id="bg-hero-start" value="#E8F5E9" oninput="updateColorPreview('bg-hero-start')"/><input type="color" id="bg-hero-end" value="#DCEDC8" oninput="updateColorPreview('bg-hero-end')"/></div>
               <div class="color-preview-bar" id="prev-bg-hero-start" style="background:linear-gradient(90deg,#E8F5E9,#DCEDC8);"></div>
             </div>
-            <div class="color-item">
-              <label>Habitat</label>
-              <div class="color-picker-row"><input type="color" id="bg-habitat-start" value="#2E7D32" oninput="updateColorPreview('bg-habitat-start')"/><input type="color" id="bg-habitat-end" value="#1B5E20" oninput="updateColorPreview('bg-habitat-end')"/></div>
-              <div class="color-preview-bar" id="prev-bg-habitat-start" style="background:linear-gradient(90deg,#2E7D32,#1B5E20);"></div>
-            </div>
-            <div class="color-item">
-              <label>Gallery</label>
-              <div class="color-picker-row"><input type="color" id="bg-gallery-start" value="#F1F8E9" oninput="updateColorPreview('bg-gallery-start')"/><input type="color" id="bg-gallery-end" value="#E8F5E9" oninput="updateColorPreview('bg-gallery-end')"/></div>
-              <div class="color-preview-bar" id="prev-bg-gallery-start" style="background:linear-gradient(90deg,#F1F8E9,#E8F5E9);"></div>
-            </div>
-            <div class="color-item">
-              <label>Карточки</label>
-              <div class="color-picker-row"><input type="color" id="bg-card" value="#FFFFFF" oninput="updateColorPreview('bg-card')"/><span class="color-value" id="val-bg-card">#FFFFFF</span></div>
-              <div class="color-preview-bar" id="prev-bg-card" style="background:#FFFFFF;"></div>
-            </div>
           </div>
-          <button class="btn btn-green" onclick="saveColors()">💾 Сохранить цвета</button>
-        </div>
-      </div>
-
-      <!-- ════ COLORINGS ════ -->
-      <div class="adm-panel" id="panel-colorings">
-        <div class="adm-section-title">🖼️ Раскраски</div>
-        <div class="adm-card">
-          <h3>🎨 Список раскрасок</h3>
-          <div id="coloringsList">
-            <div class="coloring-item">
-              <svg viewBox="0 0 60 44"><ellipse cx="30" cy="24" rx="20" ry="12" fill="none" stroke="#333" stroke-width="2"/><circle cx="14" cy="20" r="4" fill="none" stroke="#333" stroke-width="1.5"/></svg>
-              <div class="coloring-item-info"><div class="coloring-item-name">🦎 Агама сидит</div><div class="coloring-item-desc">Раскраска №1</div></div>
-              <button class="btn btn-danger btn-sm" onclick="this.closest('.coloring-item').remove()">Удалить</button>
-            </div>
-          </div>
-          <div style="margin-top:14px;border:1px solid var(--border);border-radius:10px;padding:14px;">
-            <div style="font-family:var(--ff);font-size:14px;color:#81C784;margin-bottom:10px;">➕ Новая раскраска</div>
-            <div class="adm-grid-2">
-              <div class="adm-field"><label>Название</label><input type="text" id="new-clr-name" placeholder="Название"/></div>
-              <div class="adm-field"><label>Описание</label><input type="text" id="new-clr-desc" placeholder="Раскраска №..."/></div>
-            </div>
-            <button class="btn btn-green btn-sm" onclick="addColoring()">➕ Добавить</button>
-          </div>
+          <button class="btn btn-green" onclick="saveColors()">💾 Сохранить</button>
         </div>
       </div>
 
       <!-- ════ FILES ════ -->
       <div class="adm-panel" id="panel-files">
         <div class="adm-section-title">📁 Файлы</div>
-        <div class="adm-section-sub">Файлы появятся в разделе «Интересные файлы» на сайте</div>
         <div class="adm-card">
           <h3>📤 Загрузить файлы</h3>
           <div class="upload-area" id="fileDropArea" onclick="document.getElementById('fileInput').click()">
@@ -736,9 +959,7 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
         <div class="adm-card">
           <h3>📋 Загруженные файлы <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,.3);" id="filesCountLabel">(0)</span></h3>
           <div id="filesList"><p style="font-size:13px;color:rgba(255,255,255,.25);font-weight:600;">Файлов пока нет.</p></div>
-          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn btn-ghost btn-sm" onclick="clearAllFiles()">🗑️ Очистить всё</button>
-          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="clearAllFiles()">🗑️ Очистить всё</button>
         </div>
       </div>
 
@@ -748,18 +969,39 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
         <div class="adm-card">
           <div class="adm-field"><label>Ссылка на ТГ-канал</label><input type="text" id="c-tg-channel" placeholder="https://t.me/justshelby"/></div>
           <div class="adm-field"><label>Аккаунт для заказов</label><input type="text" id="c-tg-buy" placeholder="@just_agamass"/></div>
-          <button class="btn btn-green" onclick="saveTg()">💾 Сохранить Telegram</button>
+          <button class="btn btn-green" onclick="saveTg()">💾 Сохранить</button>
         </div>
       </div>
 
       <!-- ════ SETTINGS ════ -->
       <div class="adm-panel" id="panel-settings">
         <div class="adm-section-title">⚙️ Настройки</div>
+
+        <!-- URL сервера верификации -->
+        <div class="adm-card" style="border-color:rgba(34,158,217,.4);">
+          <h3 class="blue">🖥️ Email-сервер</h3>
+          <div class="adm-field">
+            <label>URL вашего Node.js сервера</label>
+            <input type="text" id="emailServerUrl" placeholder="http://localhost:3001"
+                   oninput="updateServerUrlPreview()"/>
+          </div>
+          <p style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:12px;line-height:1.7;">
+            Укажи адрес запущенного <code style="color:var(--g3);">server.js</code>.<br/>
+            Например: <code style="color:rgba(255,255,255,.45);">http://localhost:3001</code> или <code style="color:rgba(255,255,255,.45);">https://api.your-site.com</code>
+          </p>
+          <div class="btn-row">
+            <button class="btn btn-blue" onclick="saveEmailServerUrl()">💾 Сохранить URL</button>
+            <button class="btn btn-ghost" onclick="testServerConnection()">🔌 Проверить соединение</button>
+          </div>
+          <div class="auth-error" id="serverTestError" style="margin-top:10px;"></div>
+          <div class="auth-success" id="serverTestSuccess" style="margin-top:10px;"></div>
+        </div>
+
         <div class="adm-card">
           <h3>🔐 Смена пароля</h3>
-          <div class="adm-field"><label>Текущий пароль</label><input type="password" id="old-pass" placeholder="••••••••"/></div>
-          <div class="adm-field"><label>Новый пароль</label><input type="password" id="new-pass" placeholder="••••••••"/></div>
-          <div class="adm-field"><label>Повтор нового</label><input type="password" id="new-pass2" placeholder="••••••••"/></div>
+          <div class="adm-field"><label>Текущий пароль</label><input type="password" id="old-pass"/></div>
+          <div class="adm-field"><label>Новый пароль</label><input type="password" id="new-pass"/></div>
+          <div class="adm-field"><label>Повтор нового</label><input type="password" id="new-pass2"/></div>
           <button class="btn btn-green" onclick="changePassword()">🔑 Сменить пароль</button>
         </div>
         <div class="adm-card" style="border-color:rgba(229,57,53,.35);">
@@ -777,7 +1019,15 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
 <div id="toast"></div>
 
 <script>
-/* ════ DEFAULTS ════ */
+/* ═══════════════════════════════════════════
+   CONFIG — URL сервера верификации
+   Задаётся в Настройках → Email-сервер
+═══════════════════════════════════════════ */
+let EMAIL_SERVER_URL = localStorage.getItem('sb_email_server_url') || 'http://localhost:3001';
+
+/* ═══════════════════════════════════════════
+   DEFAULTS
+═══════════════════════════════════════════ */
 const DEFAULTS = {
   hero:{badge:'🌿 Погружайся в мир рептилий!',t1:'Бородатая',t2:'Агама!',desc:'Ящерица родом из австралийских пустынь — умная, дружелюбная и невероятно классная!',cta:'Узнать больше →'},
   about:{cards:[{icon:'🦎',title:'Pogona vitticeps',text:'Бородатая агама — ящерица семейства агамовых, эндемик Австралии.'},{icon:'📏',title:'Размер',text:'Взрослые особи достигают 40–60 см в длину.'}],tx:['Животные','Пресмыкающиеся','Чешуйчатые','Агамовые','Pogona','P. vitticeps'],quote:'"Агама — это не просто рептилия!" 🥰'},
@@ -787,76 +1037,362 @@ const DEFAULTS = {
   facts:{cards:[{title:'👁️ Третий глаз',text:'Теменной орган.'},{title:'🎨 Смена цвета',text:'Агамы меняют цвет.'}]},
   footer:{tagline:'Pogona vitticeps 💚',copy:'© 2026 Shelby-book',sub:'Сделано с 💚'}
 };
-
 const CREDS_DEFAULT = {user:'shelby', pass:'agama2026'};
 
-/* ════ LECTURES / BOARDING STATE ════ */
-let lectures = [];
-let boardingDates = [];
-let boardIncludes = [];
-
+/* ═══ STATE ═══ */
+let lectures=[], boardingDates=[], boardIncludes=[];
 let aboutCards=[], habitatCards=[], careCards=[], morphCards=[], factCards=[];
-let uploadedFiles=[];
-let customFonts=[];
-let selectedFonts={body:'Nunito',title:'Fredoka One',accent:'Bubblegum Sans'};
-let selectedFontUrls={body:'Nunito:wght@800',title:'Fredoka+One',accent:'Bubblegum+Sans'};
-let loadedFontLinks=new Set();
-let openDropdown=null;
+let uploadedFiles=[], customFonts=[];
+let selectedFonts={body:'Nunito',title:'Fredoka One'};
+let selectedFontUrls={body:'Nunito:wght@800',title:'Fredoka+One'};
+let loadedFontLinks=new Set(), openDropdown=null;
 
-const FONTS_DB=[
-  {name:'Fredoka One',cat:'🎉 Игровые',sample:'Агама!',url:'Fredoka+One'},
-  {name:'Bubblegum Sans',cat:'🎉 Игровые',sample:'Агама 🦎',url:'Bubblegum+Sans'},
-  {name:'Nunito',cat:'🌸 Округлые',sample:'Агама Аа',url:'Nunito:wght@800'},
-  {name:'Comfortaa',cat:'🌸 Округлые',sample:'Агама',url:'Comfortaa:wght@700'},
-  {name:'Montserrat',cat:'🔷 Современные',sample:'АГАМА',url:'Montserrat:wght@700'},
-  {name:'Pacifico',cat:'🎉 Игровые',sample:'Агама ~',url:'Pacifico'},
-  {name:'Bebas Neue',cat:'🕹️ Декоративные',sample:'АГАМА',url:'Bebas+Neue'},
-  {name:'Caveat',cat:'✍️ Рукописные',sample:'Агама~',url:'Caveat:wght@700'},
-  {name:'Lobster',cat:'🎉 Игровые',sample:'Агама!',url:'Lobster'},
-  {name:'Rubik',cat:'🌸 Округлые',sample:'Агама!',url:'Rubik:wght@700'},
-];
+/* ═══ AUTH — TABS ═══ */
+function switchAuthTab(tab) {
+  document.getElementById('tabLogin').classList.toggle('active', tab==='login');
+  document.getElementById('tabRegister').classList.toggle('active', tab==='register');
+  document.getElementById('loginForm').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('regStep1').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('regStep2').style.display = 'none';
+  document.getElementById('regStep3').style.display = 'none';
+  document.getElementById('authSubtitle').textContent =
+    tab==='login' ? 'Панель администратора v3' : 'Создать новый аккаунт';
+  clearRegErrors();
+}
 
-/* ════ AUTH — FIXED ════ */
-function getSavedCreds() {
+/* ════════════════════════════════════
+   REGISTRATION FLOW
+════════════════════════════════════ */
+let regEmail = '';
+let resendInterval = null;
+
+function clearRegErrors() {
+  ['regStep1Error','regStep2Error','regStep3Error','regStep1Success'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.display = 'none'; el.textContent = ''; }
+  });
+  document.querySelectorAll('.otp-digit').forEach(d => d.classList.remove('error'));
+}
+
+function showRegError(stepId, msg) {
+  const el = document.getElementById(stepId);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function showRegSuccess(stepId, msg) {
+  const el = document.getElementById(stepId);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+/* Step 1 → Отправить код */
+async function sendVerificationCode() {
+  clearRegErrors();
+  const email = document.getElementById('regEmail').value.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showRegError('regStep1Error', '❌ Введи корректный email');
+    document.getElementById('regEmail').classList.add('error');
+    return;
+  }
+
+  const btn = document.getElementById('btnSendCode');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.textContent = '📨 Отправляем...';
+
   try {
-    const raw = localStorage.getItem('sb_admin_creds');
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch(e) {
-    // Corrupted data — clear it
-    localStorage.removeItem('sb_admin_creds');
-    return null;
+    const resp = await fetch(`${EMAIL_SERVER_URL}/api/send-code`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email})
+    });
+    const data = await resp.json();
+
+    if (!resp.ok || !data.ok) {
+      showRegError('regStep1Error', '❌ ' + (data.error || 'Ошибка отправки'));
+      return;
+    }
+
+    regEmail = email;
+    showRegSuccess('regStep1Success', '✅ Код отправлен! Проверь почту.');
+    setTimeout(() => goToRegStep2(), 800);
+
+  } catch (err) {
+    showRegError('regStep1Error', '❌ Не удалось подключиться к серверу. Проверь настройки.');
+    console.error('[sendCode]', err);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btn.textContent = '📨 Отправить код';
   }
 }
 
-function doLogin() {
-  const userEl = document.getElementById('loginUser');
-  const passEl = document.getElementById('loginPass');
-  const errEl  = document.getElementById('loginError');
+function goToRegStep2() {
+  document.getElementById('regStep1').style.display = 'none';
+  document.getElementById('regStep2').style.display = 'block';
+  document.getElementById('regEmailDisplay').textContent = regEmail;
+  clearRegErrors();
+  clearOTP();
+  setTimeout(() => document.getElementById('otp0').focus(), 100);
+  startResendTimer();
+}
 
-  // Trim whitespace (copy-paste issues)
-  const u = userEl.value.trim();
-  const p = passEl.value; // don't trim password
+function goToRegStep1() {
+  clearInterval(resendInterval);
+  document.getElementById('regStep2').style.display = 'none';
+  document.getElementById('regStep1').style.display = 'block';
+  clearRegErrors();
+}
 
-  const saved = getSavedCreds();
-  const valid = saved || CREDS_DEFAULT;
+/* ── OTP INPUT LOGIC ── */
+function clearOTP() {
+  for (let i=0;i<6;i++) {
+    const el = document.getElementById('otp'+i);
+    if (el) { el.value=''; el.classList.remove('filled','error'); }
+  }
+}
 
-  errEl.style.display = 'none';
+function getOTPValue() {
+  let code = '';
+  for (let i=0;i<6;i++) {
+    const el = document.getElementById('otp'+i);
+    code += (el ? el.value : '');
+  }
+  return code;
+}
 
-  if (u === valid.user && p === valid.pass) {
+function otpInput(el, idx) {
+  /* Берём только первый символ если вставили несколько */
+  let val = el.value.replace(/\D/g,'').slice(-1);
+  el.value = val;
+  el.classList.toggle('filled', val !== '');
+  el.classList.remove('error');
+  if (val && idx < 5) {
+    document.getElementById('otp'+(idx+1)).focus();
+  }
+  /* Автопроверка когда все 6 заполнены */
+  if (getOTPValue().length === 6) {
+    setTimeout(verifyCode, 200);
+  }
+}
+
+function otpKeydown(e, idx) {
+  if (e.key === 'Backspace' && !document.getElementById('otp'+idx).value && idx > 0) {
+    document.getElementById('otp'+(idx-1)).focus();
+  }
+  if (e.key === 'ArrowLeft' && idx > 0) document.getElementById('otp'+(idx-1)).focus();
+  if (e.key === 'ArrowRight' && idx < 5) document.getElementById('otp'+(idx+1)).focus();
+}
+
+/* Resend timer */
+function startResendTimer() {
+  let secs = 60;
+  document.getElementById('btnResend').disabled = true;
+  document.getElementById('resendTimerLabel').style.display = 'inline';
+  clearInterval(resendInterval);
+  resendInterval = setInterval(() => {
+    secs--;
+    const el = document.getElementById('resendTimer');
+    if (el) el.textContent = secs;
+    if (secs <= 0) {
+      clearInterval(resendInterval);
+      document.getElementById('btnResend').disabled = false;
+      const label = document.getElementById('resendTimerLabel');
+      if (label) label.style.display = 'none';
+    }
+  }, 1000);
+}
+
+async function resendCode() {
+  clearRegErrors();
+  const btn = document.getElementById('btnResend');
+  btn.disabled = true;
+  try {
+    const resp = await fetch(`${EMAIL_SERVER_URL}/api/send-code`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email: regEmail})
+    });
+    const data = await resp.json();
+    if (!resp.ok || !data.ok) {
+      showRegError('regStep2Error', '❌ ' + (data.error || 'Ошибка'));
+      btn.disabled = false;
+      return;
+    }
+    clearOTP();
+    showToast('📨 Код отправлен повторно!');
+    startResendTimer();
+  } catch(err) {
+    showRegError('regStep2Error', '❌ Ошибка соединения с сервером');
+    btn.disabled = false;
+  }
+}
+
+/* Step 2 → Verify */
+async function verifyCode() {
+  const code = getOTPValue();
+  if (code.length < 6) {
+    showRegError('regStep2Error', '❌ Введи все 6 цифр');
+    return;
+  }
+
+  const btn = document.getElementById('btnVerifyCode');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.textContent = '⏳ Проверяем...';
+
+  try {
+    const resp = await fetch(`${EMAIL_SERVER_URL}/api/verify-code`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email: regEmail, code})
+    });
+    const data = await resp.json();
+
+    if (!resp.ok || !data.ok) {
+      /* Shake + highlight errors */
+      document.querySelectorAll('.otp-digit').forEach(d => d.classList.add('error'));
+      document.getElementById('authBox').style.animation = 'shake .4s ease';
+      setTimeout(() => document.getElementById('authBox').style.animation = '', 400);
+      showRegError('regStep2Error', '❌ ' + (data.error || 'Неверный код'));
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      btn.textContent = '✅ Подтвердить email';
+      return;
+    }
+
+    clearInterval(resendInterval);
+    showToast('✅ Email подтверждён!');
+    setTimeout(() => goToRegStep3(), 400);
+
+  } catch(err) {
+    showRegError('regStep2Error', '❌ Ошибка соединения с сервером');
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btn.textContent = '✅ Подтвердить email';
+  }
+}
+
+function goToRegStep3() {
+  document.getElementById('regStep2').style.display = 'none';
+  document.getElementById('regStep3').style.display = 'block';
+  document.getElementById('verifiedEmailLabel').textContent = regEmail;
+  clearRegErrors();
+}
+
+/* Password strength */
+function updatePassStrength(val) {
+  const fill = document.getElementById('passStrengthFill');
+  const label = document.getElementById('passStrengthLabel');
+  if (!fill) return;
+  let score = 0;
+  if (val.length >= 6) score++;
+  if (val.length >= 10) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const levels = [
+    {pct:'20%', color:'#E53935', text:'Очень слабый'},
+    {pct:'40%', color:'#FF7043', text:'Слабый'},
+    {pct:'60%', color:'#FDD835', text:'Средний'},
+    {pct:'80%', color:'#8BC34A', text:'Хороший'},
+    {pct:'100%',color:'#4CAF50', text:'Отличный'},
+  ];
+  const lv = levels[Math.max(0, score-1)] || levels[0];
+  fill.style.width = val ? lv.pct : '0';
+  fill.style.background = lv.color;
+  label.textContent = val ? lv.text : '';
+  label.style.color = lv.color;
+}
+
+/* Step 3 → Complete registration */
+function completeRegistration() {
+  clearRegErrors();
+  const username = document.getElementById('regUsername').value.trim();
+  const pass  = document.getElementById('regPassword').value;
+  const pass2 = document.getElementById('regPassword2').value;
+
+  if (!username) { showRegError('regStep3Error','❌ Введи логин'); return; }
+  if (username.length < 3) { showRegError('regStep3Error','❌ Логин минимум 3 символа'); return; }
+  if (pass.length < 6) { showRegError('regStep3Error','❌ Пароль минимум 6 символов'); return; }
+  if (pass !== pass2) { showRegError('regStep3Error','❌ Пароли не совпадают'); return; }
+
+  /* Проверка на дубликат */
+  const users = safeGet('sb_users','[]');
+  if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) {
+    showRegError('regStep3Error','❌ Логин уже занят'); return;
+  }
+
+  /* Сохраняем нового пользователя */
+  const newUser = {
+    id: Date.now(),
+    username,
+    email: regEmail,
+    password: btoa(pass),   /* base64 — минимальная защита для localStorage */
+    role: 'user',
+    verified: true,
+    createdAt: new Date().toLocaleDateString('ru')
+  };
+  users.push(newUser);
+  safeSet('sb_users', users);
+
+  showToast('🎉 Аккаунт создан!');
+
+  /* Авто-вход после регистрации */
+  setTimeout(() => {
     try { localStorage.setItem('sb_admin_session', '1'); } catch(e) {}
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('adminApp').style.display = 'block';
     initAdmin();
-  } else {
-    errEl.style.display = 'block';
-    passEl.value = '';
-    passEl.focus();
-    // Shake animation
-    const box = document.querySelector('.login-box');
-    box.style.animation = 'shake .4s ease';
-    setTimeout(() => box.style.animation = '', 400);
+  }, 600);
+}
+
+/* ════════════════════════════════════
+   LOGIN (existing)
+════════════════════════════════════ */
+function getSavedCreds() {
+  try { const r=localStorage.getItem('sb_admin_creds'); return r?JSON.parse(r):null; } catch(e){ return null; }
+}
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+
+  const saved = getSavedCreds();
+  const valid = saved || CREDS_DEFAULT;
+
+  /* Проверяем сначала master-аккаунт */
+  if (u === valid.user && p === valid.pass) {
+    loginSuccess();
+    return;
   }
+
+  /* Проверяем зарегистрированных пользователей */
+  const users = safeGet('sb_users','[]');
+  const found = users.find(usr =>
+    usr.username.toLowerCase() === u.toLowerCase() &&
+    atob(usr.password||'') === p &&
+    usr.verified
+  );
+  if (found) { loginSuccess(); return; }
+
+  errEl.style.display = 'block';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginPass').focus();
+  const box = document.getElementById('authBox');
+  box.style.animation = 'shake .4s ease';
+  setTimeout(() => box.style.animation = '', 400);
+}
+
+function loginSuccess() {
+  try { localStorage.setItem('sb_admin_session','1'); } catch(e) {}
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminApp').style.display = 'block';
+  initAdmin();
 }
 
 function doLogout() {
@@ -866,148 +1402,227 @@ function doLogout() {
 
 function changePassword() {
   const o=v('old-pass'), n=v('new-pass'), n2=v('new-pass2');
-  const saved = getSavedCreds();
-  const cur = saved || CREDS_DEFAULT;
-  if (o !== cur.pass) { showToast('❌ Неверный текущий пароль!'); return; }
-  if (n !== n2) { showToast('❌ Пароли не совпадают!'); return; }
-  if (n.length < 4) { showToast('❌ Слишком короткий!'); return; }
-  try {
-    localStorage.setItem('sb_admin_creds', JSON.stringify({user: cur.user, pass: n}));
-  } catch(e) {}
+  const saved=getSavedCreds(); const cur=saved||CREDS_DEFAULT;
+  if (o!==cur.pass){ showToast('❌ Неверный текущий пароль!'); return; }
+  if (n!==n2){ showToast('❌ Пароли не совпадают!'); return; }
+  if (n.length<4){ showToast('❌ Слишком короткий!'); return; }
+  try{ localStorage.setItem('sb_admin_creds',JSON.stringify({user:cur.user,pass:n})); }catch(e){}
   showToast('🔑 Пароль изменён!');
-  ['old-pass','new-pass','new-pass2'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['old-pass','new-pass','new-pass2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+
+/* ════ USERS MANAGEMENT ════ */
+function renderUsers() {
+  const users = safeGet('sb_users','[]');
+  const tbody = document.getElementById('usersTableBody');
+  const count = document.getElementById('usersCountLabel');
+  if (count) count.textContent = `(${users.length})`;
+  const statUsers = document.getElementById('stat-users');
+  if (statUsers) statUsers.textContent = users.length;
+
+  if (!users.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:24px;">Пользователей пока нет</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map((u,i) => `
+    <tr>
+      <td><strong>${esc(u.username)}</strong></td>
+      <td style="color:rgba(255,255,255,.6);">${esc(u.email||'—')}</td>
+      <td><span class="user-role-badge">${u.role||'user'}</span></td>
+      <td><span class="user-status-badge ${u.verified?'verified':'pending'}">
+        ${u.verified?'✅ Верифицирован':'⏳ Ожидает'}
+      </span></td>
+      <td style="color:rgba(255,255,255,.4);font-size:12px;">${u.createdAt||'—'}</td>
+      <td class="actions-cell">
+        <button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">✕</button>
+      </td>
+    </tr>`).join('');
+}
+
+function deleteUser(i) {
+  const users = safeGet('sb_users','[]');
+  if (!confirm(`Удалить пользователя «${users[i]?.username}»?`)) return;
+  users.splice(i,1);
+  safeSet('sb_users', users);
+  renderUsers();
+  showToast('🗑️ Пользователь удалён');
+}
+
+function clearAllUsers() {
+  if (!confirm('Удалить всех зарегистрированных пользователей?')) return;
+  safeSet('sb_users', []);
+  renderUsers();
+  showToast('🗑️ Пользователи удалены');
+}
+
+/* ════ SERVER SETTINGS ════ */
+function updateServerUrlPreview() {
+  EMAIL_SERVER_URL = document.getElementById('emailServerUrl').value.trim() || 'http://localhost:3001';
+  const disp = document.getElementById('serverUrlDisplay');
+  if (disp) disp.textContent = EMAIL_SERVER_URL;
+}
+
+function saveEmailServerUrl() {
+  const url = document.getElementById('emailServerUrl').value.trim();
+  if (!url) { showToast('❌ Введи URL'); return; }
+  EMAIL_SERVER_URL = url;
+  try { localStorage.setItem('sb_email_server_url', url); } catch(e) {}
+  const disp = document.getElementById('serverUrlDisplay');
+  if (disp) disp.textContent = url;
+  showToast('💾 URL сервера сохранён!');
+}
+
+async function testServerConnection() {
+  const errEl  = document.getElementById('serverTestError');
+  const succEl = document.getElementById('serverTestSuccess');
+  errEl.style.display = 'none'; succEl.style.display = 'none';
+
+  const url = (document.getElementById('emailServerUrl').value.trim() || EMAIL_SERVER_URL);
+  try {
+    const resp = await fetch(`${url}/api/health`, {signal: AbortSignal.timeout(5000)});
+    const data = await resp.json();
+    if (data.ok) {
+      succEl.textContent = `✅ Сервер работает! (${data.time})`;
+      succEl.style.display = 'block';
+    } else {
+      errEl.textContent = '❌ Сервер ответил некорректно';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = `❌ Нет соединения: ${e.message}`;
+    errEl.style.display = 'block';
+  }
 }
 
 /* ════ NAV ════ */
 function showPanel(id, el) {
-  document.querySelectorAll('.adm-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.adm-nav-item').forEach(n => n.classList.remove('active'));
-  const panel = document.getElementById('panel-' + id);
-  if (panel) panel.classList.add('active');
-  if (el) el.classList.add('active');
-  if (window.innerWidth <= 860) closeSidebar();
+  document.querySelectorAll('.adm-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.adm-nav-item').forEach(n=>n.classList.remove('active'));
+  const panel=document.getElementById('panel-'+id);
+  if(panel) panel.classList.add('active');
+  if(el) el.classList.add('active');
+  if(id==='users') renderUsers();
+  if(window.innerWidth<=860) closeSidebar();
 }
-function toggleSidebar() {
-  const sb = document.getElementById('admSidebar');
-  const ov = document.getElementById('sidebarOverlay');
-  const hb = document.getElementById('admHamburger');
-  const open = sb.classList.toggle('mobile-open');
-  ov.classList.toggle('open', open);
-  hb.classList.toggle('open', open);
-  document.body.style.overflow = open ? 'hidden' : '';
+function toggleSidebar(){
+  const sb=document.getElementById('admSidebar');
+  const ov=document.getElementById('sidebarOverlay');
+  const hb=document.getElementById('admHamburger');
+  const open=sb.classList.toggle('mobile-open');
+  ov.classList.toggle('open',open);
+  hb.classList.toggle('open',open);
+  document.body.style.overflow=open?'hidden':'';
 }
-function closeSidebar() {
+function closeSidebar(){
   document.getElementById('admSidebar').classList.remove('mobile-open');
   document.getElementById('sidebarOverlay').classList.remove('open');
   document.getElementById('admHamburger').classList.remove('open');
-  document.body.style.overflow = '';
+  document.body.style.overflow='';
 }
-function openSite() { window.open('index.html', '_blank'); }
-function openEditMode() { window.open('index.html?edit=1', '_blank'); }
+function openSite(){window.open('index.html','_blank');}
+function openEditMode(){window.open('index.html?edit=1','_blank');}
 
 /* ════ TOAST ════ */
-function showToast(msg='✅ Сохранено!') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.classList.remove('show'), 3000);
+function showToast(msg='✅ Сохранено!'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000);
 }
 
 /* ════ HELPERS ════ */
-function v(id) { const el = document.getElementById(id); return el ? el.value : ''; }
-function setV(id, val) { const el = document.getElementById(id); if (el) el.value = val || ''; }
-function esc(s) { return (s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function safeGet(key, def='{}') { try { return JSON.parse(localStorage.getItem(key) || def); } catch(e) { return JSON.parse(def); } }
-function safeSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) { showToast('⚠️ Хранилище переполнено'); } }
+function v(id){const el=document.getElementById(id);return el?el.value:'';}
+function setV(id,val){const el=document.getElementById(id);if(el)el.value=val||'';}
+function esc(s){return(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function safeGet(key,def='{}'){try{return JSON.parse(localStorage.getItem(key)||def);}catch(e){return JSON.parse(def);}}
+function safeSet(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){showToast('⚠️ Хранилище переполнено');}}
 
 /* ════ INIT ════ */
-function initAdmin() {
-  uploadedFiles = safeGet('sb_files', '[]');
-  customFonts = safeGet('sb_custom_fonts', '[]');
+function initAdmin(){
+  uploadedFiles=safeGet('sb_files','[]');
+  customFonts=safeGet('sb_custom_fonts','[]');
+  EMAIL_SERVER_URL=localStorage.getItem('sb_email_server_url')||'http://localhost:3001';
   loadAllSaved();
   renderFiles();
   updateStats();
-  renderCustomFontsUI();
   loadColorsIntoUI();
   loadBoardPhotos();
   setupFileDragDrop();
   loadLecturesData();
   loadBoardingData();
+  renderUsers();
+  /* Показываем URL сервера */
+  const disp=document.getElementById('serverUrlDisplay');
+  if(disp) disp.textContent=EMAIL_SERVER_URL;
+  setV('emailServerUrl', EMAIL_SERVER_URL);
 }
 
 /* ════ SAVE ALL ════ */
-function saveAllSections() {
-  saveSection('hero'); saveSection('about'); saveSection('habitat');
-  saveSection('care'); saveSection('gallery'); saveSection('facts');
-  saveSection('footer'); saveTg(); saveLectures(); saveBoarding();
+function saveAllSections(){
+  saveSection('hero');saveSection('about');saveSection('habitat');
+  saveSection('care');saveSection('gallery');saveSection('facts');
+  saveSection('footer');saveTg();saveLectures();saveBoarding();
   showToast('💾 Все разделы сохранены!');
 }
 
-/* ════ SAVE SECTION ════ */
-function saveSection(section) {
-  const all = safeGet('sb_inline_content');
-  if (section==='hero') {
-    all['hero-badge']=v('c-hero-badge'); all['hero-t1']=v('c-hero-t1');
-    all['hero-t2']=v('c-hero-t2'); all['hero-desc']=v('c-hero-desc');
-    all['hero-cta']=v('c-hero-cta');
-  } else if (section==='about') {
+function saveSection(section){
+  const all=safeGet('sb_inline_content');
+  if(section==='hero'){
+    all['hero-badge']=v('c-hero-badge');all['hero-t1']=v('c-hero-t1');
+    all['hero-t2']=v('c-hero-t2');all['hero-desc']=v('c-hero-desc');all['hero-cta']=v('c-hero-cta');
+  }else if(section==='about'){
     all['__aboutCards']=aboutCards;
-    DEFAULTS.about.tx.forEach((_,i) => all['tx'+(i+1)]=v('tx'+(i+1)));
+    DEFAULTS.about.tx.forEach((_,i)=>all['tx'+(i+1)]=v('tx'+(i+1)));
     all['about-quote']=v('c-about-quote');
-  } else if (section==='habitat') {
-    all['hab-em']=v('c-hab-em'); all['__habitatCards']=habitatCards;
-  } else if (section==='care') {
+  }else if(section==='habitat'){
+    all['hab-em']=v('c-hab-em');all['__habitatCards']=habitatCards;
+  }else if(section==='care'){
     all['__careCards']=careCards;
-  } else if (section==='gallery') {
-    all['gal-em']=v('c-gal-em'); all['__morphCards']=morphCards;
-    all['__morphColors']=morphCards.map(m=>m.color);
-  } else if (section==='facts') {
+  }else if(section==='gallery'){
+    all['gal-em']=v('c-gal-em');all['__morphCards']=morphCards;
+  }else if(section==='facts'){
     all['__factCards']=factCards;
-  } else if (section==='footer') {
-    all['ft-tagline']=v('c-footer-tagline');
-    all['ft-copy']=v('c-footer-copy'); all['ft-sub']=v('c-footer-sub');
+  }else if(section==='footer'){
+    all['ft-tagline']=v('c-footer-tagline');all['ft-copy']=v('c-footer-copy');all['ft-sub']=v('c-footer-sub');
   }
-  safeSet('sb_inline_content', all);
+  safeSet('sb_inline_content',all);
   showToast('💾 «'+section+'» сохранено!');
 }
 
-/* ════ LOAD SAVED ════ */
-function loadAllSaved() {
-  const all = safeGet('sb_inline_content');
-  setV('c-hero-badge', all['hero-badge']||DEFAULTS.hero.badge);
-  setV('c-hero-t1', all['hero-t1']||DEFAULTS.hero.t1);
-  setV('c-hero-t2', all['hero-t2']||DEFAULTS.hero.t2);
-  setV('c-hero-desc', all['hero-desc']||DEFAULTS.hero.desc);
-  setV('c-hero-cta', all['hero-cta']||DEFAULTS.hero.cta);
-  aboutCards = all['__aboutCards'] || JSON.parse(JSON.stringify(DEFAULTS.about.cards));
+function loadAllSaved(){
+  const all=safeGet('sb_inline_content');
+  setV('c-hero-badge',all['hero-badge']||DEFAULTS.hero.badge);
+  setV('c-hero-t1',all['hero-t1']||DEFAULTS.hero.t1);
+  setV('c-hero-t2',all['hero-t2']||DEFAULTS.hero.t2);
+  setV('c-hero-desc',all['hero-desc']||DEFAULTS.hero.desc);
+  setV('c-hero-cta',all['hero-cta']||DEFAULTS.hero.cta);
+  aboutCards=all['__aboutCards']||JSON.parse(JSON.stringify(DEFAULTS.about.cards));
   renderAboutCards();
-  DEFAULTS.about.tx.forEach((d,i) => setV('tx'+(i+1), all['tx'+(i+1)]||d));
-  setV('c-about-quote', all['about-quote']||DEFAULTS.about.quote);
-  habitatCards = all['__habitatCards'] || JSON.parse(JSON.stringify(DEFAULTS.habitat.cards));
-  setV('c-hab-em', all['hab-em']||DEFAULTS.habitat.em);
+  DEFAULTS.about.tx.forEach((d,i)=>setV('tx'+(i+1),all['tx'+(i+1)]||d));
+  habitatCards=all['__habitatCards']||JSON.parse(JSON.stringify(DEFAULTS.habitat.cards));
+  setV('c-hab-em',all['hab-em']||DEFAULTS.habitat.em);
   renderHabitatCards();
-  careCards = all['__careCards'] || JSON.parse(JSON.stringify(DEFAULTS.care.cards));
+  careCards=all['__careCards']||JSON.parse(JSON.stringify(DEFAULTS.care.cards));
   renderCareCards();
-  morphCards = all['__morphCards'] || JSON.parse(JSON.stringify(DEFAULTS.gallery.morphs));
-  setV('c-gal-em', all['gal-em']||DEFAULTS.gallery.em);
+  morphCards=all['__morphCards']||JSON.parse(JSON.stringify(DEFAULTS.gallery.morphs));
+  setV('c-gal-em',all['gal-em']||DEFAULTS.gallery.em);
   renderMorphCards();
-  factCards = all['__factCards'] || JSON.parse(JSON.stringify(DEFAULTS.facts.cards));
+  factCards=all['__factCards']||JSON.parse(JSON.stringify(DEFAULTS.facts.cards));
   renderFactCards();
-  setV('c-footer-tagline', all['ft-tagline']||DEFAULTS.footer.tagline);
-  setV('c-footer-copy', all['ft-copy']||DEFAULTS.footer.copy);
-  setV('c-footer-sub', all['ft-sub']||DEFAULTS.footer.sub);
-  const tg = safeGet('sb_tg');
-  setV('c-tg-channel', tg.channel||'https://t.me/justshelby');
-  setV('c-tg-buy', tg.buy||'@just_agamass');
-  const hi = localStorage.getItem('sb_hero_image');
-  if (hi) showHeroPreview(hi);
+  setV('c-footer-tagline',all['ft-tagline']||DEFAULTS.footer.tagline);
+  setV('c-footer-copy',all['ft-copy']||DEFAULTS.footer.copy);
+  setV('c-footer-sub',all['ft-sub']||DEFAULTS.footer.sub);
+  const tg=safeGet('sb_tg');
+  setV('c-tg-channel',tg.channel||'https://t.me/justshelby');
+  setV('c-tg-buy',tg.buy||'@just_agamass');
+  const hi=localStorage.getItem('sb_hero_image');
+  if(hi) showHeroPreview(hi);
 }
 
 /* ════ CARD RENDERERS ════ */
-function renderAboutCards() {
-  document.getElementById('aboutCardsList').innerHTML = aboutCards.map((c,i) => `
+function renderAboutCards(){
+  document.getElementById('aboutCardsList').innerHTML=aboutCards.map((c,i)=>`
     <div class="item-card">
-      <div class="item-card-header"><span class="item-card-num">Карточка ${i+1}</span><button class="item-card-del" onclick="aboutCards.splice(${i},1);renderAboutCards()">✕ Удалить</button></div>
+      <div class="item-card-header"><span class="item-card-num">Карточка ${i+1}</span><button class="item-card-del" onclick="aboutCards.splice(${i},1);renderAboutCards()">✕</button></div>
       <div class="adm-grid-3">
         <div class="adm-field"><label>Иконка</label><input type="text" value="${esc(c.icon)}" oninput="aboutCards[${i}].icon=this.value"/></div>
         <div class="adm-field"><label>Заголовок</label><input type="text" value="${esc(c.title)}" oninput="aboutCards[${i}].title=this.value"/></div>
@@ -1015,12 +1630,12 @@ function renderAboutCards() {
       <div class="adm-field"><label>Текст</label><textarea oninput="aboutCards[${i}].text=this.value">${esc(c.text)}</textarea></div>
     </div>`).join('');
 }
-function addAboutCard() { aboutCards.push({icon:'🦎',title:'Новый пункт',text:'Описание...'}); renderAboutCards(); }
+function addAboutCard(){aboutCards.push({icon:'🦎',title:'Новый пункт',text:'Описание...'});renderAboutCards();}
 
-function renderHabitatCards() {
-  document.getElementById('habitatCardsList').innerHTML = habitatCards.map((c,i) => `
+function renderHabitatCards(){
+  document.getElementById('habitatCardsList').innerHTML=habitatCards.map((c,i)=>`
     <div class="item-card">
-      <div class="item-card-header"><span class="item-card-num">Карточка ${i+1}</span><button class="item-card-del" onclick="habitatCards.splice(${i},1);renderHabitatCards()">✕ Удалить</button></div>
+      <div class="item-card-header"><span class="item-card-num">Карточка ${i+1}</span><button class="item-card-del" onclick="habitatCards.splice(${i},1);renderHabitatCards()">✕</button></div>
       <div class="adm-grid-3">
         <div class="adm-field"><label>Иконка</label><input type="text" value="${esc(c.icon)}" oninput="habitatCards[${i}].icon=this.value"/></div>
         <div class="adm-field"><label>Заголовок</label><input type="text" value="${esc(c.title)}" oninput="habitatCards[${i}].title=this.value"/></div>
@@ -1028,12 +1643,12 @@ function renderHabitatCards() {
       <div class="adm-field"><label>Текст</label><textarea oninput="habitatCards[${i}].text=this.value">${esc(c.text)}</textarea></div>
     </div>`).join('');
 }
-function addHabitatCard() { habitatCards.push({icon:'🌿',title:'Новый пункт',text:'Описание...',photo:''}); renderHabitatCards(); }
+function addHabitatCard(){habitatCards.push({icon:'🌿',title:'Новый пункт',text:'Описание...',photo:''});renderHabitatCards();}
 
-function renderCareCards() {
-  document.getElementById('careCardsList').innerHTML = careCards.map((c,i) => `
+function renderCareCards(){
+  document.getElementById('careCardsList').innerHTML=careCards.map((c,i)=>`
     <div class="item-card">
-      <div class="item-card-header"><span class="item-card-num">Шаг ${String(i+1).padStart(2,'0')}</span><button class="item-card-del" onclick="careCards.splice(${i},1);renderCareCards()">✕ Удалить</button></div>
+      <div class="item-card-header"><span class="item-card-num">Шаг ${String(i+1).padStart(2,'0')}</span><button class="item-card-del" onclick="careCards.splice(${i},1);renderCareCards()">✕</button></div>
       <div class="adm-grid-2">
         <div class="adm-field"><label>Заголовок</label><input type="text" value="${esc(c.title)}" oninput="careCards[${i}].title=this.value"/></div>
         <div class="adm-field"><label>Тег</label><input type="text" value="${esc(c.tag)}" oninput="careCards[${i}].tag=this.value"/></div>
@@ -1041,12 +1656,15 @@ function renderCareCards() {
       <div class="adm-field"><label>Текст</label><textarea oninput="careCards[${i}].text=this.value">${esc(c.text)}</textarea></div>
     </div>`).join('');
 }
-function addCareCard() { careCards.push({title:'🆕 Новый шаг',text:'Описание...',tag:'Уход'}); renderCareCards(); }
+function addCareCard(){careCards.push({title:'🆕 Новый шаг',text:'Описание...',tag:'Уход'});renderCareCards();}
 
-function renderMorphCards() {
-  document.getElementById('morphCardsList').innerHTML = morphCards.map((m,i) => `
+function renderMorphCards(){
+  document.getElementById('morphCardsList').innerHTML=morphCards.map((m,i)=>`
     <div class="morph-editor-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><span class="item-card-num">Морф ${i+1}</span><button class="item-card-del" onclick="morphCards.splice(${i},1);renderMorphCards()">✕ Удалить</button></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span class="item-card-num">Морф ${i+1}</span>
+        <button class="item-card-del" onclick="morphCards.splice(${i},1);renderMorphCards()">✕</button>
+      </div>
       <div class="morph-color-row">
         <div class="morph-swatch-preview" id="msw-${i}" style="background:${m.color};"></div>
         <input type="color" value="${m.color}" oninput="morphCards[${i}].color=this.value;document.getElementById('msw-${i}').style.background=this.value" style="width:40px;height:34px;border-radius:7px;border:2px solid var(--border);cursor:pointer;padding:2px;"/>
@@ -1057,449 +1675,295 @@ function renderMorphCards() {
       </div>
       <div class="adm-field"><label>Описание</label><textarea oninput="morphCards[${i}].text=this.value">${esc(m.text)}</textarea></div>
     </div>`).join('');
-  document.getElementById('stat-morphs').textContent = morphCards.length;
 }
-function addMorphCard() {
+function addMorphCard(){
   const colors=['#4CAF50','#FF7043','#FDD835','#29B6F6','#AB47BC'];
   morphCards.push({emoji:'🦎',title:'Новый морф',text:'Описание...',color:colors[morphCards.length%colors.length],photo:''});
   renderMorphCards();
 }
 
-function renderFactCards() {
-  document.getElementById('factsCardsList').innerHTML = factCards.map((f,i) => `
+function renderFactCards(){
+  document.getElementById('factsCardsList').innerHTML=factCards.map((f,i)=>`
     <div class="item-card">
-      <div class="item-card-header"><span class="item-card-num">Факт ${String(i+1).padStart(2,'0')}</span><button class="item-card-del" onclick="factCards.splice(${i},1);renderFactCards()">✕ Удалить</button></div>
+      <div class="item-card-header"><span class="item-card-num">Факт ${String(i+1).padStart(2,'0')}</span><button class="item-card-del" onclick="factCards.splice(${i},1);renderFactCards()">✕</button></div>
       <div class="adm-field"><label>Заголовок</label><input type="text" value="${esc(f.title)}" oninput="factCards[${i}].title=this.value"/></div>
       <div class="adm-field"><label>Текст</label><textarea oninput="factCards[${i}].text=this.value">${esc(f.text)}</textarea></div>
     </div>`).join('');
 }
-function addFactCard() { factCards.push({title:'⚡ Новый факт',text:'Удивительный факт...'}); renderFactCards(); }
+function addFactCard(){factCards.push({title:'⚡ Новый факт',text:'Удивительный факт...'});renderFactCards();}
 
 /* ════ LECTURES ════ */
-function loadLecturesData() {
-  const data = safeGet('sb_lectures', '{"items":[],"title":"","desc":""}');
-  lectures = data.items || [];
-  setV('lec-section-title', data.title || '');
-  setV('lec-section-desc', data.desc || '');
+function loadLecturesData(){
+  const data=safeGet('sb_lectures','{"items":[],"title":"","desc":""}');
+  lectures=data.items||[];
+  setV('lec-section-title',data.title||'');
+  setV('lec-section-desc',data.desc||'');
   renderLectures();
 }
-
-function saveLectures() {
-  safeSet('sb_lectures', {
-    title: v('lec-section-title'),
-    desc: v('lec-section-desc'),
-    items: lectures
-  });
+function saveLectures(){
+  safeSet('sb_lectures',{title:v('lec-section-title'),desc:v('lec-section-desc'),items:lectures});
   showToast('📚 Лекции сохранены!');
 }
-
-function addLecture() {
-  lectures.push({
-    id: Date.now(),
-    title: 'Новая лекция',
-    desc: 'Описание лекции...',
-    photo: '',
-    dates: []
-  });
+function addLecture(){
+  lectures.push({id:Date.now(),title:'Новая лекция',desc:'Описание...',photo:'',dates:[]});
   renderLectures();
 }
-
-function removeLecture(idx) {
-  if (!confirm('Удалить лекцию?')) return;
-  lectures.splice(idx, 1);
-  renderLectures();
-}
-
-function addLectureDate(idx) {
-  const input = document.getElementById(`lec-date-input-${idx}`);
-  const dateVal = input.value;
-  if (!dateVal) { showToast('❌ Выбери дату!'); return; }
-  if (lectures[idx].dates.find(d => d.date === dateVal)) { showToast('⚠️ Дата уже добавлена'); return; }
-  lectures[idx].dates.push({date: dateVal, booked: false});
-  lectures[idx].dates.sort((a,b) => a.date.localeCompare(b.date));
+function removeLecture(idx){if(!confirm('Удалить лекцию?'))return;lectures.splice(idx,1);renderLectures();}
+function addLectureDate(idx){
+  const input=document.getElementById(`lec-date-input-${idx}`);
+  const dateVal=input.value;
+  if(!dateVal){showToast('❌ Выбери дату!');return;}
+  if(lectures[idx].dates.find(d=>d.date===dateVal)){showToast('⚠️ Дата уже добавлена');return;}
+  lectures[idx].dates.push({date:dateVal,booked:false});
+  lectures[idx].dates.sort((a,b)=>a.date.localeCompare(b.date));
   renderLectureDates(idx);
-  input.value = '';
+  input.value='';
 }
-
-function toggleLectureDate(idx, dateIdx) {
-  lectures[idx].dates[dateIdx].booked = !lectures[idx].dates[dateIdx].booked;
-  renderLectureDates(idx);
+function toggleLectureDate(idx,dateIdx){lectures[idx].dates[dateIdx].booked=!lectures[idx].dates[dateIdx].booked;renderLectureDates(idx);}
+function removeLectureDate(idx,dateIdx){lectures[idx].dates.splice(dateIdx,1);renderLectureDates(idx);}
+function renderLectureDates(idx){
+  const c=document.getElementById(`lec-dates-${idx}`);if(!c)return;
+  const d=lectures[idx].dates;
+  c.innerHTML=d.length===0?'<span style="font-size:12px;color:rgba(255,255,255,.3);">Нет дат</span>':
+    d.map((slot,di)=>`<div class="date-slot-tag ${slot.booked?'booked':'free'}">
+      <span>${formatDate(slot.date)}</span>
+      <button class="toggle-booked-btn" onclick="toggleLectureDate(${idx},${di})">${slot.booked?'🔓':'🔒'}</button>
+      <button class="date-slot-del" onclick="removeLectureDate(${idx},${di})">✕</button>
+    </div>`).join('');
 }
-
-function removeLectureDate(idx, dateIdx) {
-  lectures[idx].dates.splice(dateIdx, 1);
-  renderLectureDates(idx);
-}
-
-function renderLectureDates(idx) {
-  const container = document.getElementById(`lec-dates-${idx}`);
-  if (!container) return;
-  const d = lectures[idx].dates;
-  container.innerHTML = d.length === 0
-    ? '<span style="font-size:12px;color:rgba(255,255,255,.3);">Нет дат</span>'
-    : d.map((slot, di) => `
-      <div class="date-slot-tag ${slot.booked ? 'booked' : 'free'}">
-        <span>${formatDate(slot.date)}</span>
-        <button class="toggle-booked-btn" onclick="toggleLectureDate(${idx},${di})" title="${slot.booked ? 'Отметить свободной' : 'Отметить занятой'}">${slot.booked ? '🔓' : '🔒'}</button>
-        <button class="date-slot-del" onclick="removeLectureDate(${idx},${di})">✕</button>
-      </div>`).join('');
-}
-
-function handleLecturePhoto(input, idx) {
-  const f = input.files[0]; if (!f) return;
-  if (f.size > 5*1024*1024) { showToast('❌ Макс 5MB'); return; }
-  const r = new FileReader();
-  r.onload = e => {
-    lectures[idx].photo = e.target.result;
-    const slot = document.getElementById(`lec-photo-slot-${idx}`);
-    if (slot) slot.innerHTML = `<img src="${e.target.result}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"/><button class="photo-slot-remove" style="display:flex;" onclick="event.stopPropagation();lectures[${idx}].photo='';document.getElementById('lec-photo-slot-${idx}').innerHTML='<div class=\\'photo-slot-icon\\'>📸</div><div class=\\'photo-slot-label\\'>Загрузить фото</div>'">✕</button>`;
+function handleLecturePhoto(input,idx){
+  const f=input.files[0];if(!f)return;
+  if(f.size>5*1024*1024){showToast('❌ Макс 5MB');return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    lectures[idx].photo=e.target.result;
+    const slot=document.getElementById(`lec-photo-slot-${idx}`);
+    if(slot)slot.innerHTML=`<img src="${e.target.result}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"/>`;
     showToast('📷 Фото добавлено!');
   };
-  r.readAsDataURL(f);
-  input.value = '';
+  r.readAsDataURL(f);input.value='';
 }
-
-function renderLectures() {
-  const container = document.getElementById('lecturesList');
-  if (!lectures.length) {
-    container.innerHTML = '<p style="font-size:13px;color:rgba(255,255,255,.3);font-weight:600;">Лекций пока нет. Добавь первую!</p>';
-    return;
-  }
-  container.innerHTML = lectures.map((lec, i) => `
+function renderLectures(){
+  const container=document.getElementById('lecturesList');
+  if(!lectures.length){container.innerHTML='<p style="font-size:13px;color:rgba(255,255,255,.3);">Лекций пока нет.</p>';return;}
+  container.innerHTML=lectures.map((lec,i)=>`
     <div class="lecture-card">
       <div class="lecture-card-header">
         <span class="lecture-badge badge-lecture">Лекция ${i+1}</span>
-        <button class="item-card-del" onclick="removeLecture(${i})">✕ Удалить</button>
+        <button class="item-card-del" onclick="removeLecture(${i})">✕</button>
       </div>
-
       <div class="adm-grid-2" style="margin-bottom:12px;">
         <div>
-          <div class="adm-field"><label>Название лекции</label><input type="text" value="${esc(lec.title)}" oninput="lectures[${i}].title=this.value"/></div>
+          <div class="adm-field"><label>Название</label><input type="text" value="${esc(lec.title)}" oninput="lectures[${i}].title=this.value"/></div>
           <div class="adm-field"><label>Описание</label><textarea oninput="lectures[${i}].desc=this.value">${esc(lec.desc)}</textarea></div>
         </div>
         <div>
           <div style="font-size:11px;font-weight:800;color:#81C784;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">📷 Фото</div>
           <div class="photo-slot" style="min-height:110px;" id="lec-photo-slot-${i}" onclick="document.getElementById('lec-photo-input-${i}').click()">
-            ${lec.photo
-              ? `<img src="${lec.photo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"/><button class="photo-slot-remove" style="display:flex;" onclick="event.stopPropagation();lectures[${i}].photo='';this.closest('.photo-slot').innerHTML='<div class=\\'photo-slot-icon\\'>📸</div><div class=\\'photo-slot-label\\'>Загрузить фото</div>'">✕</button>`
-              : `<div class="photo-slot-icon">📸</div><div class="photo-slot-label">Загрузить фото</div>`}
+            ${lec.photo?`<img src="${lec.photo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"/>`:'<div class="photo-slot-icon">📸</div><div class="photo-slot-label">Загрузить</div>'}
           </div>
           <input type="file" id="lec-photo-input-${i}" accept="image/*" style="display:none" onchange="handleLecturePhoto(this,${i})"/>
         </div>
       </div>
-
       <div class="date-slots-wrap">
-        <div class="date-slots-title">📅 Свободные даты:</div>
-        <div class="date-slots-list" id="lec-dates-${i}">${lectures[i].dates.length === 0
-          ? '<span style="font-size:12px;color:rgba(255,255,255,.3);">Нет дат</span>'
-          : lectures[i].dates.map((slot,di) => `
-            <div class="date-slot-tag ${slot.booked?'booked':'free'}">
-              <span>${formatDate(slot.date)}</span>
-              <button class="toggle-booked-btn" onclick="toggleLectureDate(${i},${di})">${slot.booked?'🔓':'🔒'}</button>
-              <button class="date-slot-del" onclick="removeLectureDate(${i},${di})">✕</button>
-            </div>`).join('')}
-        </div>
+        <div class="date-slots-title">📅 Даты:</div>
+        <div class="date-slots-list" id="lec-dates-${i}">${lectures[i].dates.length===0?'<span style="font-size:12px;color:rgba(255,255,255,.3);">Нет дат</span>':lectures[i].dates.map((slot,di)=>`<div class="date-slot-tag ${slot.booked?'booked':'free'}"><span>${formatDate(slot.date)}</span><button class="toggle-booked-btn" onclick="toggleLectureDate(${i},${di})">${slot.booked?'🔓':'🔒'}</button><button class="date-slot-del" onclick="removeLectureDate(${i},${di})">✕</button></div>`).join('')}</div>
         <div class="add-date-row">
           <input type="date" id="lec-date-input-${i}"/>
-          <button class="btn btn-blue btn-sm" onclick="addLectureDate(${i})">➕ Добавить дату</button>
+          <button class="btn btn-blue btn-sm" onclick="addLectureDate(${i})">➕</button>
         </div>
       </div>
     </div>`).join('');
 }
 
 /* ════ BOARDING ════ */
-function loadBoardingData() {
-  const data = safeGet('sb_boarding', '{"title":"","desc":"","price":"","contact":"","includes":[],"dates":[]}');
-  setV('board-section-title', data.title||'');
-  setV('board-section-desc', data.desc||'');
-  setV('board-price', data.price||'');
-  setV('board-contact', data.contact||'');
-  boardIncludes = data.includes || [];
-  boardingDates = data.dates || [];
+function loadBoardingData(){
+  const data=safeGet('sb_boarding','{"title":"","desc":"","price":"","contact":"","includes":[],"dates":[]}');
+  setV('board-section-title',data.title||'');
+  setV('board-section-desc',data.desc||'');
+  setV('board-price',data.price||'');
+  setV('board-contact',data.contact||'');
+  boardIncludes=data.includes||[];
+  boardingDates=data.dates||[];
   renderBoardIncludes();
   renderBoardingDates();
   loadBoardPhotos();
 }
-
-function saveBoarding() {
-  safeSet('sb_boarding', {
-    title: v('board-section-title'),
-    desc: v('board-section-desc'),
-    price: v('board-price'),
-    contact: v('board-contact'),
-    includes: boardIncludes,
-    dates: boardingDates
-  });
+function saveBoarding(){
+  safeSet('sb_boarding',{title:v('board-section-title'),desc:v('board-section-desc'),price:v('board-price'),contact:v('board-contact'),includes:boardIncludes,dates:boardingDates});
   showToast('🏡 Передержка сохранена!');
 }
-
-function addBoardInclude() {
-  boardIncludes.push({text: 'Новый пункт'});
-  renderBoardIncludes();
-}
-function renderBoardIncludes() {
-  const c = document.getElementById('boardIncludesList');
-  if (!boardIncludes.length) {
-    c.innerHTML = '<p style="font-size:12px;color:rgba(255,255,255,.3);">Пунктов нет</p>';
-    return;
-  }
-  c.innerHTML = boardIncludes.map((inc, i) => `
+function addBoardInclude(){boardIncludes.push({text:'Новый пункт'});renderBoardIncludes();}
+function renderBoardIncludes(){
+  const c=document.getElementById('boardIncludesList');
+  if(!boardIncludes.length){c.innerHTML='<p style="font-size:12px;color:rgba(255,255,255,.3);">Пунктов нет</p>';return;}
+  c.innerHTML=boardIncludes.map((inc,i)=>`
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
-      <span style="color:var(--g3);font-size:14px;">✓</span>
+      <span style="color:var(--g3);">✓</span>
       <input type="text" value="${esc(inc.text)}" oninput="boardIncludes[${i}].text=this.value"
         style="flex:1;padding:8px 12px;background:rgba(255,255,255,.05);border:2px solid var(--border);border-radius:8px;color:#e0ffe2;font-family:var(--fb);font-size:13px;font-weight:600;outline:none;"/>
       <button class="item-card-del" style="margin-left:0;" onclick="boardIncludes.splice(${i},1);renderBoardIncludes()">✕</button>
     </div>`).join('');
 }
-
-function addBoardDate() {
-  const input = document.getElementById('boardDateInput');
-  const dateVal = input.value;
-  if (!dateVal) { showToast('❌ Выбери дату!'); return; }
-  if (boardingDates.find(d => d.date === dateVal)) { showToast('⚠️ Дата уже добавлена'); return; }
-  boardingDates.push({date: dateVal, booked: false});
-  boardingDates.sort((a,b) => a.date.localeCompare(b.date));
-  renderBoardingDates();
-  input.value = '';
+function addBoardDate(){
+  const input=document.getElementById('boardDateInput');const dateVal=input.value;
+  if(!dateVal){showToast('❌ Выбери дату!');return;}
+  if(boardingDates.find(d=>d.date===dateVal)){showToast('⚠️ Дата уже добавлена');return;}
+  boardingDates.push({date:dateVal,booked:false});
+  boardingDates.sort((a,b)=>a.date.localeCompare(b.date));
+  renderBoardingDates();input.value='';
+}
+function toggleBoardDate(idx){boardingDates[idx].booked=!boardingDates[idx].booked;renderBoardingDates();}
+function removeBoardDate(idx){boardingDates.splice(idx,1);renderBoardingDates();}
+function renderBoardingDates(){
+  const c=document.getElementById('boardingDatesList');
+  if(!boardingDates.length){c.innerHTML='<span style="font-size:12px;color:rgba(255,255,255,.3);">Нет дат</span>';return;}
+  c.innerHTML=boardingDates.map((slot,i)=>`<div class="date-slot-tag ${slot.booked?'booked':'free'}">
+    <span>${formatDate(slot.date)}</span>
+    <button class="toggle-booked-btn" onclick="toggleBoardDate(${i})">${slot.booked?'🔓 Освободить':'🔒 Занять'}</button>
+    <button class="date-slot-del" onclick="removeBoardDate(${i})">✕</button>
+  </div>`).join('');
+}
+function formatDate(dateStr){
+  try{const d=new Date(dateStr+'T00:00:00');return d.toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric'});}catch(e){return dateStr;}
 }
 
-function toggleBoardDate(idx) {
-  boardingDates[idx].booked = !boardingDates[idx].booked;
-  renderBoardingDates();
-}
-
-function removeBoardDate(idx) {
-  boardingDates.splice(idx, 1);
-  renderBoardingDates();
-}
-
-function renderBoardingDates() {
-  const c = document.getElementById('boardingDatesList');
-  if (!boardingDates.length) {
-    c.innerHTML = '<span style="font-size:12px;color:rgba(255,255,255,.3);">Нет дат</span>';
-    return;
-  }
-  c.innerHTML = boardingDates.map((slot, i) => `
-    <div class="date-slot-tag ${slot.booked ? 'booked' : 'free'}">
-      <span>${formatDate(slot.date)}</span>
-      <button class="toggle-booked-btn" onclick="toggleBoardDate(${i})" title="${slot.booked ? 'Отметить свободной' : 'Отметить занятой'}">${slot.booked ? '🔓 Освободить' : '🔒 Занять'}</button>
-      <button class="date-slot-del" onclick="removeBoardDate(${i})">✕</button>
-    </div>`).join('');
-}
-
-function formatDate(dateStr) {
-  try {
-    const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('ru-RU', {day:'numeric', month:'short', year:'numeric'});
-  } catch(e) { return dateStr; }
-}
-
-/* ════ BOARDING PHOTOS ════ */
-function triggerBoardPhoto(inputId, slotId, storageKey) {
-  document.getElementById(inputId).click();
-}
-function handleBoardPhotoUpload(input, slotId, storageKey) {
-  const f = input.files[0]; if (!f) return;
-  if (f.size > 5*1024*1024) { showToast('❌ Макс 5MB'); return; }
-  const r = new FileReader();
-  r.onload = e => {
-    try { localStorage.setItem(storageKey, e.target.result); } catch(ex) {}
-    renderBoardPhotoSlot(slotId, e.target.result, storageKey);
-    showToast('📸 Фото добавлено!');
+/* ════ BOARD PHOTOS ════ */
+function triggerBoardPhoto(inputId,slotId,storageKey){document.getElementById(inputId).click();}
+function handleBoardPhotoUpload(input,slotId,storageKey){
+  const f=input.files[0];if(!f)return;
+  if(f.size>5*1024*1024){showToast('❌ Макс 5MB');return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    try{localStorage.setItem(storageKey,e.target.result);}catch(ex){}
+    renderBoardPhotoSlot(slotId,e.target.result,storageKey);showToast('📸 Фото добавлено!');
   };
-  r.readAsDataURL(f);
-  input.value = '';
+  r.readAsDataURL(f);input.value='';
 }
-function renderBoardPhotoSlot(slotId, src, storageKey) {
-  const slot = document.getElementById(slotId);
-  if (!slot) return;
-  slot.innerHTML = `<img src="${src}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block;"/><button class="photo-slot-remove" style="display:flex;" onclick="removeBoardPhoto(event,'${slotId}','${storageKey}')">✕</button>`;
+function renderBoardPhotoSlot(slotId,src,storageKey){
+  const slot=document.getElementById(slotId);if(!slot)return;
+  slot.innerHTML=`<img src="${src}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block;"/><button class="photo-slot-remove" style="display:flex;" onclick="removeBoardPhoto(event,'${slotId}','${storageKey}')">✕</button>`;
 }
-function removeBoardPhoto(e, slotId, storageKey) {
+function removeBoardPhoto(e,slotId,storageKey){
   e.stopPropagation();
-  try { localStorage.removeItem(storageKey); } catch(ex) {}
-  const slot = document.getElementById(slotId);
-  if (slot) slot.innerHTML = `<div class="photo-slot-icon">📸</div><div class="photo-slot-label">Загрузить фото</div><button class="photo-slot-remove" onclick="removeBoardPhoto(event,'${slotId}','${storageKey}')">✕</button>`;
+  try{localStorage.removeItem(storageKey);}catch(ex){}
+  const slot=document.getElementById(slotId);
+  if(slot)slot.innerHTML=`<div class="photo-slot-icon">📸</div><div class="photo-slot-label">Загрузить фото</div><button class="photo-slot-remove" onclick="removeBoardPhoto(event,'${slotId}','${storageKey}')">✕</button>`;
 }
-function loadBoardPhotos() {
-  ['sb_board_photo1','sb_board_photo2'].forEach((key,i) => {
-    const slotId = `boardPhoto${i+1}Slot`;
-    try {
-      const src = localStorage.getItem(key);
-      if (src) renderBoardPhotoSlot(slotId, src, key);
-    } catch(e) {}
+function loadBoardPhotos(){
+  ['sb_board_photo1','sb_board_photo2'].forEach((key,i)=>{
+    const slotId=`boardPhoto${i+1}Slot`;
+    try{const src=localStorage.getItem(key);if(src)renderBoardPhotoSlot(slotId,src,key);}catch(e){}
   });
 }
 
 /* ════ HERO IMAGE ════ */
-function handleHeroImageUpload(input) {
-  const f = input.files[0]; if (!f) return;
-  if (f.size > 5*1024*1024) { showToast('❌ Макс 5MB'); return; }
-  const r = new FileReader();
-  r.onload = e => { try { localStorage.setItem('sb_hero_image', e.target.result); } catch(ex) {} showHeroPreview(e.target.result); showToast('🖼️ Фото сохранено!'); };
-  r.readAsDataURL(f);
-  input.value = '';
+function handleHeroImageUpload(input){
+  const f=input.files[0];if(!f)return;
+  if(f.size>5*1024*1024){showToast('❌ Макс 5MB');return;}
+  const r=new FileReader();
+  r.onload=e=>{try{localStorage.setItem('sb_hero_image',e.target.result);}catch(ex){}showHeroPreview(e.target.result);showToast('🖼️ Фото сохранено!');};
+  r.readAsDataURL(f);input.value='';
 }
-function showHeroPreview(src) {
-  const w = document.getElementById('heroImgPreviewWrap');
-  const im = document.getElementById('heroImgPreview');
-  if (src) { im.src=src; w.style.display='block'; } else { w.style.display='none'; }
+function showHeroPreview(src){
+  const w=document.getElementById('heroImgPreviewWrap');const im=document.getElementById('heroImgPreview');
+  if(src){im.src=src;w.style.display='block';}else{w.style.display='none';}
 }
-function removeHeroImage() {
-  if (!confirm('Удалить главное фото?')) return;
-  try { localStorage.removeItem('sb_hero_image'); } catch(e) {}
-  showHeroPreview(null);
-  showToast('🗑️ Фото удалено');
+function removeHeroImage(){
+  if(!confirm('Удалить главное фото?'))return;
+  try{localStorage.removeItem('sb_hero_image');}catch(e){}
+  showHeroPreview(null);showToast('🗑️ Фото удалено');
 }
 
 /* ════ FONTS ════ */
-function buildFontList(type, q) {
-  const container = document.getElementById(type+'FontList');
-  if (!container) return;
-  const filtered = FONTS_DB.filter(f => !q || f.name.toLowerCase().includes(q.toLowerCase()));
-  const groups = {};
-  filtered.forEach(f => { if (!groups[f.cat]) groups[f.cat]=[]; groups[f.cat].push(f); });
-  let html = '';
-  Object.entries(groups).forEach(([cat, fonts]) => {
-    html += `<div style="padding:6px 12px 3px;font-size:9.5px;font-weight:800;color:rgba(255,255,255,.25);letter-spacing:.1em;text-transform:uppercase;">${cat}</div>`;
-    fonts.forEach(f => {
+const FONTS_DB=[
+  {name:'Fredoka One',cat:'🎉 Игровые',sample:'Агама!',url:'Fredoka+One'},
+  {name:'Nunito',cat:'🌸 Округлые',sample:'Агама Аа',url:'Nunito:wght@800'},
+  {name:'Comfortaa',cat:'🌸 Округлые',sample:'Агама',url:'Comfortaa:wght@700'},
+  {name:'Montserrat',cat:'🔷 Современные',sample:'АГАМА',url:'Montserrat:wght@700'},
+  {name:'Pacifico',cat:'🎉 Игровые',sample:'Агама ~',url:'Pacifico'},
+  {name:'Caveat',cat:'✍️ Рукописные',sample:'Агама~',url:'Caveat:wght@700'},
+  {name:'Lobster',cat:'🎉 Игровые',sample:'Агама!',url:'Lobster'},
+  {name:'Rubik',cat:'🌸 Округлые',sample:'Агама!',url:'Rubik:wght@700'},
+];
+function buildFontList(type,q){
+  const container=document.getElementById(type+'FontList');if(!container)return;
+  const filtered=FONTS_DB.filter(f=>!q||f.name.toLowerCase().includes(q.toLowerCase()));
+  const groups={};
+  filtered.forEach(f=>{if(!groups[f.cat])groups[f.cat]=[];groups[f.cat].push(f);});
+  let html='';
+  Object.entries(groups).forEach(([cat,fonts])=>{
+    html+=`<div style="padding:6px 12px 3px;font-size:9.5px;font-weight:800;color:rgba(255,255,255,.25);letter-spacing:.1em;text-transform:uppercase;">${cat}</div>`;
+    fonts.forEach(f=>{
       loadGFont(f);
-      html += `<div class="font-item ${selectedFonts[type]===f.name?'selected':''}" onclick="selectFont('${type}','${f.name}','${f.url||''}',this)">
+      html+=`<div class="font-item ${selectedFonts[type]===f.name?'selected':''}" onclick="selectFont('${type}','${f.name}','${f.url||''}',this)">
         <span class="font-item-sample" style="font-family:'${f.name}',sans-serif;">${f.sample}</span>
         <span class="font-item-name">${f.name}</span></div>`;
     });
   });
-  container.innerHTML = html;
+  container.innerHTML=html;
 }
-function filterFonts(type, q) { buildFontList(type, q); }
-function loadGFont(font) {
-  if (!font.url || loadedFontLinks.has(font.name)) return;
+function filterFonts(type,q){buildFontList(type,q);}
+function loadGFont(font){
+  if(!font.url||loadedFontLinks.has(font.name))return;
   loadedFontLinks.add(font.name);
-  const l = document.createElement('link');
-  l.rel='stylesheet';
-  l.href = `https://fonts.googleapis.com/css2?family=${font.url}&display=swap`;
+  const l=document.createElement('link');l.rel='stylesheet';
+  l.href=`https://fonts.googleapis.com/css2?family=${font.url}&display=swap`;
   document.head.appendChild(l);
 }
-function toggleFontDropdown(type) {
-  const dd = document.getElementById(type+'FontDropdown');
-  if (!dd) return;
-  const isOpen = dd.style.display !== 'none';
-  document.querySelectorAll('.font-dropdown').forEach(d => d.style.display='none');
-  openDropdown = null;
-  if (!isOpen) { dd.style.display='block'; openDropdown=type; buildFontList(type,''); }
+function toggleFontDropdown(type){
+  const dd=document.getElementById(type+'FontDropdown');if(!dd)return;
+  const isOpen=dd.style.display!=='none';
+  document.querySelectorAll('.font-dropdown').forEach(d=>d.style.display='none');
+  openDropdown=null;
+  if(!isOpen){dd.style.display='block';openDropdown=type;buildFontList(type,'');}
 }
-document.addEventListener('click', e => {
-  if (!e.target.closest('.font-selector-wrap')) {
-    document.querySelectorAll('.font-dropdown').forEach(d => d.style.display='none');
-    openDropdown = null;
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.font-selector-wrap')){
+    document.querySelectorAll('.font-dropdown').forEach(d=>d.style.display='none');openDropdown=null;
   }
 });
-function selectFont(type, name, url, el) {
-  selectedFonts[type]=name; selectedFontUrls[type]=url;
+function selectFont(type,name,url,el){
+  selectedFonts[type]=name;selectedFontUrls[type]=url;
   document.getElementById(type+'FontDropdown').style.display='none';
   document.getElementById(type+'FontName').textContent=name;
   const pr=document.getElementById(type+'FontPreview');
-  if (pr) { pr.style.fontFamily="'"+name+"',sans-serif"; }
+  if(pr){pr.style.fontFamily="'"+name+"',sans-serif";}
   openDropdown=null;
 }
-function applyAndSaveFonts() {
-  try { localStorage.setItem('sb_fonts', JSON.stringify(selectedFonts)); } catch(e) {}
-  const css=`:root { --ff:'${selectedFonts.title}',cursive; --fb:'${selectedFonts.body}',sans-serif; --fb2:'${selectedFonts.accent||"Bubblegum Sans"}',cursive; }`;
-  try { localStorage.setItem('sb_custom_css', css); } catch(e) {}
+function applyAndSaveFonts(){
+  try{localStorage.setItem('sb_fonts',JSON.stringify(selectedFonts));}catch(e){}
+  const css=`:root{--ff:'${selectedFonts.title}',cursive;--fb:'${selectedFonts.body}',sans-serif;}`;
+  try{localStorage.setItem('sb_custom_css',css);}catch(e){}
   showToast('✍️ Шрифты применены!');
 }
 
-/* ════ CUSTOM FONTS ════ */
-function handleCustomFontUpload(input) {
-  Array.from(input.files).forEach(file => {
-    if (file.size > 10*1024*1024) { showToast('❌ Шрифт > 10MB'); return; }
-    const name = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g,' ');
-    const ext = file.name.split('.').pop().toLowerCase();
-    const mime = {ttf:'truetype',otf:'opentype',woff:'woff',woff2:'woff2'}[ext]||'truetype';
-    const r = new FileReader();
-    r.onload = e => {
-      injectCustomFontFace(name, e.target.result, mime);
-      customFonts.push({name, data:e.target.result, mime, ext});
-      safeSet('sb_custom_fonts', customFonts);
-      renderCustomFontsUI();
-      showToast(`✍️ Шрифт «${name}» загружен!`);
-    };
-    r.readAsDataURL(file);
-  });
-  input.value='';
-}
-function injectCustomFontFace(name, data, mime) {
-  const s = document.createElement('style');
-  s.textContent = `@font-face{font-family:'${name}';src:url('${data}') format('${mime}');font-display:swap;}`;
-  document.head.appendChild(s);
-}
-function renderCustomFontsUI() {
-  const c = document.getElementById('customFontsList');
-  if (!c) return;
-  customFonts.forEach(f => injectCustomFontFace(f.name, f.data, f.mime));
-  if (!customFonts.length) { c.innerHTML='<p style="font-size:12px;color:rgba(255,255,255,.3);font-weight:600;">Свои шрифты не загружены</p>'; return; }
-  c.innerHTML = customFonts.map((f,i) => `
-    <div class="custom-font-item">
-      <span style="font-family:'${f.name}',sans-serif;font-size:16px;color:var(--g3);">Агама!</span>
-      <span class="custom-font-item-name">${f.name} (.${f.ext})</span>
-      <button class="btn btn-danger btn-sm" onclick="deleteCustomFont(${i})">✕</button>
-    </div>`).join('');
-}
-function deleteCustomFont(i) {
-  customFonts.splice(i,1);
-  safeSet('sb_custom_fonts', customFonts);
-  renderCustomFontsUI();
-}
-
 /* ════ COLORS ════ */
-function updateColorPreview(id) {
-  const input=document.getElementById(id); if(!input) return;
+function updateColorPreview(id){
+  const input=document.getElementById(id);if(!input)return;
   const val=input.value;
   const prev=document.getElementById('prev-'+id);
-  const valSpan=document.getElementById('val-'+id);
-  if (prev) {
-    if (id.endsWith('-start')||id.endsWith('-end')) {
+  if(prev){
+    if(id.endsWith('-start')||id.endsWith('-end')){
       const base=id.replace(/-start$/,'').replace(/-end$/,'');
-      const s=document.getElementById(base+'-start');
-      const en=document.getElementById(base+'-end');
-      if (s&&en) prev.style.background=`linear-gradient(90deg,${s.value},${en.value})`;
-    } else { prev.style.background=val; }
+      const s=document.getElementById(base+'-start');const en=document.getElementById(base+'-end');
+      if(s&&en)prev.style.background=`linear-gradient(90deg,${s.value},${en.value})`;
+    }else{prev.style.background=val;}
   }
-  if (valSpan) valSpan.textContent=val;
 }
-function saveColors() {
+function saveColors(){
   const colors={};
-  document.querySelectorAll('.color-item input[type="color"]').forEach(inp => { colors[inp.id]=inp.value; });
-  safeSet('sb_colors', colors);
-  showToast('🎨 Цвета сохранены!');
+  document.querySelectorAll('.color-item input[type="color"]').forEach(inp=>{colors[inp.id]=inp.value;});
+  safeSet('sb_colors',colors);showToast('🎨 Цвета сохранены!');
 }
-function loadColorsIntoUI() {
-  const colors = safeGet('sb_colors');
-  Object.entries(colors).forEach(([id,val]) => {
-    const el=document.getElementById(id);
-    if (el) { el.value=val; updateColorPreview(id); }
-  });
-}
-
-/* ════ COLORING ════ */
-function addColoring() {
-  const name=v('new-clr-name'); const desc=v('new-clr-desc');
-  if (!name) { showToast('❌ Укажи название!'); return; }
-  const list=document.getElementById('coloringsList');
-  const item=document.createElement('div');
-  item.className='coloring-item';
-  item.innerHTML=`<svg viewBox="0 0 60 44" style="background:#fff;border-radius:6px;flex-shrink:0;"><text x="30" y="28" text-anchor="middle" font-size="20">🎨</text></svg>
-    <div class="coloring-item-info"><div class="coloring-item-name">${name}</div><div class="coloring-item-desc">${desc}</div></div>
-    <button class="btn btn-danger btn-sm" onclick="this.closest('.coloring-item').remove()">Удалить</button>`;
-  list.appendChild(item);
-  setV('new-clr-name',''); setV('new-clr-desc','');
-  showToast('🎨 Раскраска добавлена!');
+function loadColorsIntoUI(){
+  const colors=safeGet('sb_colors');
+  Object.entries(colors).forEach(([id,val])=>{const el=document.getElementById(id);if(el){el.value=val;updateColorPreview(id);}});
 }
 
 /* ════ FILES ════ */
-function setupFileDragDrop() {
-  const area=document.getElementById('fileDropArea');
-  if (!area) return;
+function setupFileDragDrop(){
+  const area=document.getElementById('fileDropArea');if(!area)return;
   ['dragenter','dragover'].forEach(ev=>area.addEventListener(ev,e=>{e.preventDefault();area.classList.add('drag');}));
   ['dragleave','drop'].forEach(ev=>area.addEventListener(ev,e=>{e.preventDefault();area.classList.remove('drag');}));
   area.addEventListener('drop',e=>{if(e.dataTransfer.files.length)processFiles(e.dataTransfer.files);});
@@ -1517,10 +1981,10 @@ function processFiles(files){
   });
 }
 function formatBytes(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
-function getFileIcon(t){if(!t)return'📁';if(t.includes('image'))return'🖼️';if(t.includes('pdf'))return'📄';if(t.includes('video'))return'🎬';if(t.includes('audio'))return'🎵';if(t.includes('zip')||t.includes('rar'))return'📦';return'📁';}
+function getFileIcon(t){if(!t)return'📁';if(t.includes('image'))return'🖼️';if(t.includes('pdf'))return'📄';if(t.includes('video'))return'🎬';if(t.includes('audio'))return'🎵';return'📁';}
 function saveFiles(){
-  safeSet('sb_files', uploadedFiles);
-  safeSet('sb_public_files', uploadedFiles.map(f=>({name:f.name,size:f.size,date:f.date,desc:f.desc,data:f.data,type:f.type})));
+  safeSet('sb_files',uploadedFiles);
+  safeSet('sb_public_files',uploadedFiles.map(f=>({name:f.name,size:f.size,date:f.date,desc:f.desc,data:f.data,type:f.type})));
 }
 function renderFiles(){
   const c=document.getElementById('filesList');
@@ -1542,7 +2006,11 @@ function renderFiles(){
 }
 function deleteFile(i){uploadedFiles.splice(i,1);saveFiles();renderFiles();updateStats();}
 function clearAllFiles(){if(!confirm('Удалить все файлы?'))return;uploadedFiles=[];saveFiles();renderFiles();updateStats();}
-function updateStats(){document.getElementById('stat-files').textContent=uploadedFiles.length;}
+function updateStats(){
+  document.getElementById('stat-files').textContent=uploadedFiles.length;
+  const users=safeGet('sb_users','[]');
+  const su=document.getElementById('stat-users');if(su)su.textContent=users.length;
+}
 
 /* ════ TELEGRAM ════ */
 function saveTg(){safeSet('sb_tg',{channel:v('c-tg-channel'),buy:v('c-tg-buy')});showToast('✈️ Telegram сохранён!');}
@@ -1550,49 +2018,42 @@ function saveTg(){safeSet('sb_tg',{channel:v('c-tg-channel'),buy:v('c-tg-buy')})
 /* ════ RESET ════ */
 function confirmReset(){
   if(!confirm('Удалить ВСЕ данные?'))return;
-  const keys=['sb_inline_content','sb_files','sb_public_files','sb_tg','sb_hero_image','sb_fonts','sb_colors','sb_custom_css','sb_colors_css','sb_morph_photos','sb_habitat_photos','sb_habitat_section_bg','sb_gallery_section_bg','sb_custom_fonts','sb_lectures','sb_boarding','sb_board_photo1','sb_board_photo2'];
+  const keys=['sb_inline_content','sb_files','sb_public_files','sb_tg','sb_hero_image',
+    'sb_fonts','sb_colors','sb_custom_css','sb_colors_css','sb_morph_photos','sb_habitat_photos',
+    'sb_custom_fonts','sb_lectures','sb_boarding','sb_board_photo1','sb_board_photo2','sb_users'];
   keys.forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
   uploadedFiles=[];customFonts=[];lectures=[];boardingDates=[];boardIncludes=[];
-  renderFiles();renderCustomFontsUI();updateStats();renderLectures();renderBoardingDates();renderBoardIncludes();
+  renderFiles();updateStats();renderLectures();renderBoardingDates();renderBoardIncludes();renderUsers();
   showToast('🗑️ Данные сброшены');
 }
 function confirmResetInline(){
   if(!confirm('Сбросить все правки текстов?'))return;
   try{localStorage.removeItem('sb_inline_content');}catch(e){}
-  loadAllSaved();
-  showToast('↺ Правки сброшены');
+  loadAllSaved();showToast('↺ Правки сброшены');
 }
 
 /* ════ DOMContentLoaded ════ */
 window.addEventListener('DOMContentLoaded',()=>{
-  // Add shake animation
-  const style = document.createElement('style');
-  style.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}`;
+  const style=document.createElement('style');
+  style.textContent=`@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}`;
   document.head.appendChild(style);
 
-  // Check existing session
-  try {
-    if (localStorage.getItem('sb_admin_session') === '1') {
+  try{
+    if(localStorage.getItem('sb_admin_session')==='1'){
       document.getElementById('loginScreen').style.display='none';
       document.getElementById('adminApp').style.display='block';
       initAdmin();
     }
-  } catch(e) {
-    // localStorage not available
-    console.warn('localStorage not available:', e);
-  }
+  }catch(e){console.warn('localStorage unavailable:',e);}
 
-  // Restore CSS overrides
-  try {
-    const css = localStorage.getItem('sb_custom_css')||'';
-    const colorCss = localStorage.getItem('sb_colors_css')||'';
-    if (css||colorCss) {
-      const s=document.createElement('style');
-      s.id='sb-admin-overrides';
-      s.textContent=css+'\n'+colorCss;
-      document.head.appendChild(s);
+  try{
+    const css=localStorage.getItem('sb_custom_css')||'';
+    const colorCss=localStorage.getItem('sb_colors_css')||'';
+    if(css||colorCss){
+      const s=document.createElement('style');s.id='sb-admin-overrides';
+      s.textContent=css+'\n'+colorCss;document.head.appendChild(s);
     }
-  } catch(e) {}
+  }catch(e){}
 });
 </script>
 </body>
