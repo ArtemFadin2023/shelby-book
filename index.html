@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#F0FAF1" />
   <title>Shelby-book — Мир Бородатых Агам</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="api-bridge.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Bubblegum+Sans&display=swap" rel="stylesheet" />
   <script>
     (function(){
@@ -1098,7 +1099,38 @@ function saveAllEdits() {
   data['__morphGrid_html'] = document.getElementById('morphGrid').innerHTML;
   data['__factsMasonry_html'] = document.getElementById('factsMasonry').innerHTML;
   localStorage.setItem('sb_inline_content', JSON.stringify(data));
-  showToast('💾 Сохранено!');
+
+  // Сохраняем на сервер через api.php
+  if (window.__adminPass) {
+    fetch('./api.php?action=save_all', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ pass: window.__adminPass, data: data })
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.ok) showToast('💾 Сохранено на сервере!');
+      else showToast('⚠️ Ошибка сохранения: ' + res.message);
+    })
+    .catch(() => showToast('⚠️ Нет связи с сервером'));
+  } else {
+    // Если нет пароля — сохраняем напрямую без пароля (только для edit mode)
+    const pass = localStorage.getItem('sb_admin_creds')
+      ? JSON.parse(localStorage.getItem('sb_admin_creds')).pass
+      : 'agama2026';
+    fetch('./api.php?action=save_all', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ pass, data })
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.ok) showToast('💾 Сохранено на сервере!');
+      else showToast('⚠️ ' + res.message);
+    })
+    .catch(() => showToast('⚠️ Нет связи с сервером'));
+  }
+
   document.querySelectorAll('[data-key]').forEach(el => { originals[el.dataset.key] = el.innerHTML; });
 }
 
@@ -1132,7 +1164,98 @@ window.addEventListener('beforeunload', e => {
 
 /* ═══ LOAD SAVED ═══ */
 function loadSavedContent() {
-  const saved = JSON.parse(localStorage.getItem('sb_inline_content') || 'null');
+  // Сначала грузим из localStorage как кэш
+  const cached = JSON.parse(localStorage.getItem('sb_inline_content') || 'null');
+  if (cached) applyContent(cached);
+
+  // Затем грузим свежие данные с сервера
+  fetch('./api.php?action=load&t=' + Date.now())
+    .then(r => r.json())
+    .then(res => {
+      if (res.ok && res.data) {
+        const data = res.data;
+        // Сохраняем в localStorage как кэш
+        localStorage.setItem('sb_inline_content', JSON.stringify(data));
+        applyContent(data);
+        // Применяем шрифты и цвета с сервера
+        if (data['sb_custom_css'] || data['sb_colors_css']) {
+          let el = document.getElementById('sb-admin-overrides');
+          if (!el) { el = document.createElement('style'); el.id='sb-admin-overrides'; document.head.appendChild(el); }
+          el.textContent = (data['sb_custom_css']||'') + '\n' + (data['sb_colors_css']||'');
+        }
+        // Применяем фото
+        if (data['sb_hero_image']) {
+          document.getElementById('heroDefaultSvg').style.display='none';
+          const im=document.getElementById('heroCustomImg');
+          im.src=data['sb_hero_image']; im.style.display='block';
+        }
+        // Морф фото
+        if (data['sb_morph_photos']) {
+          try {
+            const photos = typeof data['sb_morph_photos']==='string'
+              ? JSON.parse(data['sb_morph_photos']) : data['sb_morph_photos'];
+            document.querySelectorAll('.morph-card').forEach(card => {
+              const id = card.dataset.morphId;
+              if (id && photos[id]) {
+                const swatch = card.querySelector('.morph-swatch');
+                if (swatch) {
+                  swatch.style.backgroundImage=`url('${photos[id]}')`;
+                  swatch.style.backgroundSize='cover';
+                  swatch.style.backgroundPosition='center';
+                  swatch.classList.add('has-photo');
+                }
+              }
+            });
+          } catch(e){}
+        }
+        // Habitat фото
+        if (data['sb_habitat_photos']) {
+          try {
+            const photos = typeof data['sb_habitat_photos']==='string'
+              ? JSON.parse(data['sb_habitat_photos']) : data['sb_habitat_photos'];
+            document.querySelectorAll('.habitat-item').forEach(item => {
+              const id = item.dataset.habitatId;
+              if (id && photos[id]) {
+                item.style.backgroundImage=`url('${photos[id]}')`;
+                item.classList.add('has-photo');
+              }
+            });
+          } catch(e){}
+        }
+        // TG ссылки
+        if (data['sb_tg']) {
+          try {
+            const tg = typeof data['sb_tg']==='string' ? JSON.parse(data['sb_tg']) : data['sb_tg'];
+            if (tg.channel) {
+              const els = ['navTgLink','fabTgLink','mobileNavTg'];
+              els.forEach(id => { const el=document.getElementById(id); if(el) el.href=tg.channel; });
+            }
+            if (tg.buy) {
+              const href = tg.buy.startsWith('http') ? tg.buy : 'https://t.me/'+tg.buy.replace('@','');
+              const bl=document.getElementById('modalTgBuyLink');
+              const bt=document.getElementById('modalTgBuyText');
+              if(bl) bl.href=href;
+              if(bt) bt.textContent=tg.buy;
+            }
+          } catch(e){}
+        }
+        // Публичные файлы
+        if (data['sb_public_files']) {
+          try {
+            const files = typeof data['sb_public_files']==='string'
+              ? JSON.parse(data['sb_public_files']) : data['sb_public_files'];
+            localStorage.setItem('sb_public_files', JSON.stringify(files));
+            renderPublicFiles();
+          } catch(e){}
+        }
+        // Услуги
+        renderServices();
+      }
+    })
+    .catch(e => console.warn('[shelby] Загрузка с сервера не удалась:', e));
+}
+
+function applyContent(saved) {
   if (!saved) return;
   if (saved['__aboutCards_html']) document.getElementById('aboutCardsContainer').innerHTML = saved['__aboutCards_html'];
   if (saved['__habitatGrid_html']) document.getElementById('habitatGrid').innerHTML = saved['__habitatGrid_html'];
@@ -1168,6 +1291,13 @@ function handleMorphPhotoUpload(input) {
     const photos = JSON.parse(localStorage.getItem('sb_morph_photos') || '{}');
     photos[morphId] = e.target.result;
     localStorage.setItem('sb_morph_photos', JSON.stringify(photos));
+    // Сохраняем на сервер
+    const _pass2 = localStorage.getItem('sb_admin_creds') ? JSON.parse(localStorage.getItem('sb_admin_creds')).pass : 'agama2026';
+    fetch('./api.php?action=save', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ pass: _pass2, key: 'sb_morph_photos', value: photos })
+    }).catch(()=>{});
     showToast('📷 Фото морфа добавлено!');
   };
   reader.readAsDataURL(file);
@@ -1211,6 +1341,13 @@ function handleHabitatPhotoUpload(input) {
     const photos = JSON.parse(localStorage.getItem('sb_habitat_photos') || '{}');
     photos[habitatId] = e.target.result;
     localStorage.setItem('sb_habitat_photos', JSON.stringify(photos));
+    // Сохраняем на сервер
+    const _pass3 = localStorage.getItem('sb_admin_creds') ? JSON.parse(localStorage.getItem('sb_admin_creds')).pass : 'agama2026';
+    fetch('./api.php?action=save', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ pass: _pass3, key: 'sb_habitat_photos', value: photos })
+    }).catch(()=>{});
     showToast('📷 Фото среды добавлено!');
   };
   reader.readAsDataURL(file);
@@ -1402,6 +1539,13 @@ function replaceHeroImage(input) {
   const reader = new FileReader();
   reader.onload = e => {
     localStorage.setItem('sb_hero_image', e.target.result);
+    // Сохраняем на сервер
+    const _pass1 = localStorage.getItem('sb_admin_creds') ? JSON.parse(localStorage.getItem('sb_admin_creds')).pass : 'agama2026';
+    fetch('./api.php?action=save', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ pass: _pass1, key: 'sb_hero_image', value: e.target.result })
+    }).catch(()=>{});
     document.getElementById('heroDefaultSvg').style.display = 'none';
     const el = document.getElementById('heroCustomImg');
     el.src = e.target.result; el.style.display = 'block';
