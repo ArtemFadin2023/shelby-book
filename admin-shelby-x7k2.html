@@ -586,7 +586,7 @@ a,button,input,select,textarea,[role=button]{-webkit-tap-highlight-color:transpa
     <button class="adm-topbar-btn view" onclick="openSite()">🌐 Просмотр</button>
     <div class="adm-topbar-sep hide-mobile"></div>
     <button class="adm-topbar-btn save-all" onclick="saveAllSections()">💾 Сохранить всё</button>
-    <button class="adm-topbar-btn logout" onclick="doLogout()">Выйти →</button>
+    <button class="adm-topbar-btn logout" onclick="doLogout()">Выйти из админки</button>
   </div>
 
   <div class="adm-layout">
@@ -1397,7 +1397,7 @@ function loginSuccess() {
 
 function doLogout() {
   try { localStorage.removeItem('sb_admin_session'); } catch(e) {}
-  location.reload();
+  window.location.href = 'index.html';
 }
 
 function changePassword() {

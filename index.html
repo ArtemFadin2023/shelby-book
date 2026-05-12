@@ -438,6 +438,26 @@
   </div>
 </div>
 
+<div id="userModal" onclick="modalBgClick(event)">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-head">
+      <div class="modal-head-logo">shelby<span>-book</span></div>
+      <div class="modal-head-sub" id="modalSub">Личный кабинет</div>
+      <button class="modal-close" onclick="closeModal()">X</button>
+    </div>
+    <div class="modal-body">
+      <div class="user-avatar" id="modalAvatar">S</div>
+      <div class="user-name" id="modalName">shelby</div>
+      <div class="user-role" id="modalRole">Пользователь</div>
+      <button class="book-btn lecture" onclick="bookAction('lecture')">Лекции</button>
+      <button class="book-btn board" onclick="bookAction('board')">Передержка</button>
+      <div class="modal-sep"></div>
+      <button class="logout-btn" onclick="doLogout()">Выйти из аккаунта</button>
+      <div class="book-msg ok" id="bookMsg"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ COLORING MODAL ═══ -->
 <div class="modal-overlay" id="coloringModal">
   <div class="modal-box">
@@ -1914,7 +1934,31 @@ document.addEventListener('copy', e => {
   if (!isEditMode) { e.clipboardData.setData('text/plain','© shelby-book'); e.preventDefault(); }
 });
 
+function updateAuthButtons(){
+  const logged = localStorage.getItem('sb_admin_session') === '1';
+  const label = logged ? '\u041A\u0430\u0431\u0438\u043D\u0435\u0442' : '\u0412\u0445\u043E\u0434';
+  const fabLabel = logged ? '<span>??</span> \u041A\u0430\u0431\u0438\u043D\u0435\u0442' : '<span>??</span> \u0412\u0445\u043E\u0434';
+  const n= document.getElementById('authNavBtn'); if(n) n.textContent = label;
+  const m= document.getElementById('mobileAuthBtn'); if(m) m.textContent = label;
+  const f= document.getElementById('fabAuthBtn'); if(f) f.innerHTML = fabLabel;
+}
+function syncCabinetFromStorage(){
+  let cur=null;
+  try{ cur=JSON.parse(localStorage.getItem('sb_current_user')||'null'); }catch(e){}
+  if(!cur){
+    const creds = JSON.parse(localStorage.getItem('sb_admin_creds')||'{"user":"shelby"}');
+    cur = { username: creds.user || 'shelby', role: '\u0410\u0434\u043C\u0438\u043D\u0438\u0441\u0442\u0440\u0430\u0442\u043E\u0440' };
+  }
+  const name = cur.username || 'shelby';
+  const role = cur.role || '\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C';
+  const av=document.getElementById('modalAvatar'); if(av) av.textContent=(name[0]||'S').toUpperCase();
+  const mn=document.getElementById('modalName'); if(mn) mn.textContent=name;
+  const mr=document.getElementById('modalRole'); if(mr) mr.textContent=role;
+  const ms=document.getElementById('modalSub'); if(ms) ms.textContent='\u041B\u0438\u0447\u043D\u044B\u0439 \u043A\u0430\u0431\u0438\u043D\u0435\u0442';
+}
 function handleAuthButtonClick() {
+  const logged = localStorage.getItem('sb_admin_session') === '1';
+  if(logged){ syncCabinetFromStorage(); openModal(); return; }
   const m = document.getElementById('authFrameModal');
   if (!m) return;
   m.style.display = 'flex';
@@ -1930,7 +1974,19 @@ function closeAuthFrameModal() {
 function onAuthFrameBackdrop(e) {
   if (e.target && e.target.id === 'authFrameModal') closeAuthFrameModal();
 }
-
+function openModal(){const m=document.getElementById('userModal'); if(m){m.classList.add('open'); document.body.style.overflow='hidden';}}
+function closeModal(){const m=document.getElementById('userModal'); if(m){m.classList.remove('open'); const authOpen=document.getElementById('authFrameModal')?.style.display==='flex'; const colorOpen=document.getElementById('coloringModal')?.classList.contains('active'); document.body.style.overflow=(authOpen||colorOpen)?'hidden':'';}}
+function modalBgClick(e){ if(e.target && e.target.id==='userModal') closeModal(); }
+function doLogout(){ try{localStorage.removeItem('sb_admin_session'); localStorage.removeItem('sb_current_user');}catch(e){} closeModal(); updateAuthButtons(); }
+function bookAction(type){ let tg={}; try{tg=JSON.parse(localStorage.getItem('sb_tg')||'{}');}catch(e){} const link=tg.buy?('https://t.me/'+String(tg.buy).replace('@','')):'https://t.me/just_agamass'; const msg=document.getElementById('bookMsg'); if(msg){msg.style.display='block'; msg.textContent= type==='lecture' ? '\u041E\u0442\u043A\u0440\u044B\u0432\u0430\u0435\u043C Telegram \u0434\u043B\u044F \u0437\u0430\u043F\u0438\u0441\u0438 \u043D\u0430 \u043B\u0435\u043A\u0446\u0438\u0438...' : '\u041E\u0442\u043A\u0440\u044B\u0432\u0430\u0435\u043C Telegram \u0434\u043B\u044F \u0431\u0440\u043E\u043D\u0438 \u043F\u0435\u0440\u0435\u0434\u0435\u0440\u0436\u043A\u0438...'; } setTimeout(()=>window.open(link,'_blank'),300);}
+setInterval(()=>{
+  if(localStorage.getItem('sb_admin_session')==='1'){
+    updateAuthButtons();
+    syncCabinetFromStorage();
+    if(document.getElementById('authFrameModal')?.style.display==='flex') closeAuthFrameModal();
+  }
+}, 700);
+updateAuthButtons();
 /* ═══ MODAL ═══ */
 function openColoringModal() {
   document.getElementById('coloringModal').classList.add('active');

@@ -327,7 +327,10 @@ function doLogin(){
 }
 
 function loginSuccess(username,role){
-  try{localStorage.setItem('sb_admin_session','1');}catch(e){}
+  try{
+    localStorage.setItem('sb_admin_session','1');
+    localStorage.setItem('sb_current_user',JSON.stringify({username,role}));
+  }catch(e){}
   g('modalAvatar').textContent=username[0].toUpperCase();
   g('modalName').textContent=username;
   g('modalRole').textContent=role;
@@ -343,7 +346,10 @@ function closeModal(){g('userModal').classList.remove('open');}
 function modalBgClick(e){if(e.target===g('userModal'))closeModal();}
 
 function doLogout(){
-  try{localStorage.removeItem('sb_admin_session');}catch(e){}
+  try{
+    localStorage.removeItem('sb_admin_session');
+    localStorage.removeItem('sb_current_user');
+  }catch(e){}
   closeModal();
   g('triggerArea').style.display='none';
   g('mainTabs').style.display='flex';
