@@ -210,6 +210,163 @@ switch ($action) {
             'time'     => date('Y-m-d H:i:s'),
         ], $writable ? 'API работает' : 'Нет прав на запись!');
 
+
+// ════════════════════════════════════════
+// POST /api.php?action=register
+// Регистрация публичного пользователя
+// Body: { username, email, password }
+// ════════════════════════════════════════
+case 'register':
+    $username = $body['username'] ?? '';
+    $email    = $body['email']    ?? '';
+    $password = $body['password'] ?? '';
+
+    if (empty($username) || empty($email) || empty($password)) {
+        respond(false, [], 'Заполни все поля');
+    }
+
+    $users = readJson(__DIR__ . '/shelby_users.json', []);
+
+    // Проверка дубликатов
+    foreach ($users as $u) {
+        if (strtolower($u['username']) === strtolower($username)) {
+            respond(false, [], 'Имя пользователя уже занято');
+        }
+        if (strtolower($u['email']) === strtolower($email)) {
+            respond(false, [], 'Email уже зарегистрирован');
+        }
+    }
+
+    $newUser = [
+        'id'        => uniqid(),
+        'username'  => $username,
+        'email'     => $email,
+        'password'  => password_hash($password, PASSWORD_DEFAULT),
+        'createdAt' => date('Y-m-d H:i:s'),
+        'bookings'  => [],
+    ];
+    $users[] = $newUser;
+
+    if (!writeJson(__DIR__ . '/shelby_users.json', $users)) {
+        respond(false, [], 'Ошибка сохранения');
+    }
+    respond(true, ['id' => $newUser['id'], 'username' => $username], 'Зарегистрирован');
+
+// ════════════════════════════════════════
+// POST /api.php?action=login_user
+// Вход публичного пользователя
+// Body: { email, password }
+// ════════════════════════════════════════
+case 'login_user':
+    $email    = $body['email']    ?? '';
+    $password = $body['password'] ?? '';
+
+    if (empty($email) || empty($password)) {
+        respond(false, [], 'Заполни все поля');
+    }
+
+    $users = readJson(__DIR__ . '/shelby_users.json', []);
+    $found = null;
+    foreach ($users as $u) {
+        if (strtolower($u['email']) === strtolower($email)) {
+            $found = $u; break;
+        }
+    }
+
+    if (!$found || !password_verify($password, $found['password'])) {
+        respond(false, [], 'Неверный email или пароль');
+    }
+
+    respond(true, [
+        'id'       => $found['id'],
+        'username' => $found['username'],
+        'email'    => $found['email'],
+    ], 'OK');
+
+// ════════════════════════════════════════
+// POST /api.php?action=check_username
+// Проверка занятости username
+// Body: { username }
+// ════════════════════════════════════════
+case 'check_username':
+    $username = $body['username'] ?? '';
+    if (empty($username)) respond(false, [], 'Укажи username');
+    $users = readJson(__DIR__ . '/shelby_users.json', []);
+    foreach ($users as $u) {
+        if (strtolower($u['username']) === strtolower($username)) {
+            respond(false, [], 'Занято');
+        }
+    }
+    respond(true, [], 'Свободно');
+
+// ════════════════════════════════════════
+// POST /api.php?action=booking_request
+// Заявка на лекцию/передержку/раскраску
+// Body: { user_id, type, date, comment }
+// ════════════════════════════════════════
+case 'booking_request':
+    $userId  = $body['user_id'] ?? '';
+    $type    = $body['type']    ?? '';
+    $date    = $body['date']    ?? '';
+    $comment = $body['comment'] ?? '';
+
+    if (empty($userId) || empty($type)) {
+        respond(false, [], 'Недостаточно данных');
+    }
+
+    $bookings = readJson(__DIR__ . '/shelby_bookings.json', []);
+    $booking  = [
+        'id'        => uniqid(),
+        'user_id'   => $userId,
+        'type'      => $type,
+        'date'      => $date,
+        'comment'   => $comment,
+        'status'    => 'new',
+        'createdAt' => date('Y-m-d H:i:s'),
+    ];
+    $bookings[] = $booking;
+
+    if (!writeJson(__DIR__ . '/shelby_bookings.json', $bookings)) {
+        respond(false, [], 'Ошибка сохранения');
+    }
+    respond(true, [], 'Заявка принята');
+
+// ════════════════════════════════════════
+// GET /api.php?action=get_bookings
+// Получить все заявки (только для админа)
+// ════════════════════════════════════════
+case 'get_bookings':
+    $pass = $_GET['pass'] ?? $body['pass'] ?? '';
+    if (!checkAdminPassword($pass)) {
+        respond(false, [], 'Нет доступа');
+    }
+    $bookings = readJson(__DIR__ . '/shelby_bookings.json', []);
+    $users    = readJson(__DIR__ . '/shelby_users.json', []);
+    // Добавляем инфо о пользователе к каждой заявке
+    $usersMap = [];
+    foreach ($users as $u) $usersMap[$u['id']] = $u;
+    foreach ($bookings as &$b) {
+        $b['user'] = $usersMap[$b['user_id']] ?? ['username'=>'Неизвестно','email'=>'—'];
+    }
+    respond(true, $bookings, '');
+
+// ════════════════════════════════════════
+// GET /api.php?action=get_users_public
+// Список публичных пользователей (только для админа)
+// ════════════════════════════════════════
+case 'get_users_public':
+    $pass = $_GET['pass'] ?? $body['pass'] ?? '';
+    if (!checkAdminPassword($pass)) {
+        respond(false, [], 'Нет доступа');
+    }
+    $users = readJson(__DIR__ . '/shelby_users.json', []);
+    // Убираем пароли из ответа
+    $safe = array_map(function($u) {
+        unset($u['password']);
+        return $u;
+    }, $users);
+    respond(true, $safe, '');
+
     default:
         http_response_code(400);
         respond(false, [], 'Неизвестное действие: ' . htmlspecialchars($action));

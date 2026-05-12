@@ -128,6 +128,32 @@ app.post('/api/verify-code', (req, res) => {
   res.json({ ok: true });
 });
 
+
+
+// Запись на лекцию/передержку
+app.post('/api/booking', async (req, res) => {
+  const { type, name, email, phone, date, comment } = req.body;
+  if (!type || !name || !email) {
+    return res.status(400).json({ ok: false, error: 'Заполни все поля' });
+  }
+
+  const booking = { type, name, email, phone, date, comment, createdAt: new Date().toISOString() };
+
+  try {
+    // Отправляем уведомление админу
+    await sendEmail(
+      'stefanandshelby@mail.ru',
+      `Новая заявка: ${type}\nИмя: ${name}\nEmail: ${email}\nТел: ${phone||'—'}\nДата: ${date||'—'}\nКомментарий: ${comment||'—'}`,
+      'booking'
+    );
+    console.log(`[BOOKING] ${type} от ${name} (${email})`);
+    res.json({ ok: true });
+  } catch(err) {
+    console.error('[BOOKING] Ошибка:', err.message);
+    res.status(500).json({ ok: false, error: 'Ошибка отправки' });
+  }
+});
+
 app.listen(CONFIG.PORT, () => {
   console.log(`\n🦎 shelby-book email server v2`);
   console.log(`📡 http://localhost:${CONFIG.PORT}`);
