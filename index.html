@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Bubblegum+Sans&display=swap" rel="stylesheet" />
   <script>
     (function(){
+      // Сначала применяем из localStorage как кэш
       var fontCss = localStorage.getItem('sb_custom_css') || '';
       var colorCss = localStorage.getItem('sb_colors_css') || '';
       if (fontCss || colorCss) {
@@ -20,6 +21,22 @@
         style.textContent = fontCss + '\n' + colorCss;
         document.head.appendChild(style);
       }
+      // Затем загружаем с сервера и обновляем
+      fetch('./api.php?action=load&t=' + Date.now())
+        .then(function(r){ return r.json(); })
+        .then(function(res){
+          if (!res.ok || !res.data) return;
+          var d = res.data;
+          var css = (d['sb_custom_css']||'') + '\n' + (d['sb_colors_css']||'');
+          if (!css.trim()) return;
+          // Сохраняем в localStorage
+          if (d['sb_custom_css']) localStorage.setItem('sb_custom_css', d['sb_custom_css']);
+          if (d['sb_colors_css']) localStorage.setItem('sb_colors_css', d['sb_colors_css']);
+          // Применяем стили
+          var el = document.getElementById('sb-admin-overrides');
+          if (!el) { el = document.createElement('style'); el.id='sb-admin-overrides'; document.head.appendChild(el); }
+          el.textContent = css;
+        }).catch(function(){});
     })();
   </script>
   <style>
@@ -1098,6 +1115,11 @@ function saveAllEdits() {
   data['__careTimeline_html'] = document.getElementById('careTimeline').innerHTML;
   data['__morphGrid_html'] = document.getElementById('morphGrid').innerHTML;
   data['__factsMasonry_html'] = document.getElementById('factsMasonry').innerHTML;
+  // Добавляем шрифты и цвета
+  const _customCss = localStorage.getItem('sb_custom_css') || '';
+  const _colorsCss = localStorage.getItem('sb_colors_css') || '';
+  if (_customCss) data['sb_custom_css'] = _customCss;
+  if (_colorsCss) data['sb_colors_css'] = _colorsCss;
   localStorage.setItem('sb_inline_content', JSON.stringify(data));
 
   // Сохраняем на сервер через api.php
@@ -1264,6 +1286,19 @@ function applyContent(saved) {
   if (saved['__factsMasonry_html']) document.getElementById('factsMasonry').innerHTML = saved['__factsMasonry_html'];
   document.querySelectorAll('[data-key]').forEach(el => {
     if (saved[el.dataset.key] !== undefined) el.innerHTML = saved[el.dataset.key];
+  });
+  // Переинициализируем анимации для новых элементов
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.about-card,.habitat-item,.care-step,.morph-card,.fact-card,.taxonomy-block,.ifile-card,.service-card').forEach(el => {
+      if (!el.classList.contains('visible')) {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight) {
+          el.classList.add('visible');
+        } else {
+          observer.observe(el);
+        }
+      }
+    });
   });
 }
 
@@ -1711,6 +1746,13 @@ function applyFontChoice() {
   if (!el) { el = document.createElement('style'); el.id='sb-admin-overrides'; document.head.appendChild(el); }
   const colorCss = localStorage.getItem('sb_colors_css') || '';
   el.textContent = css + '\n' + colorCss;
+  // Сохраняем шрифты на сервер
+  const _fp = localStorage.getItem('sb_admin_creds') ? JSON.parse(localStorage.getItem('sb_admin_creds')).pass : 'agama2026';
+  fetch('./api.php?action=save', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ pass: _fp, key: 'sb_custom_css', value: css })
+  }).catch(()=>{});
   showToast(`✍️ Шрифт «${selectedFont.n}» применён!`);
 }
 
