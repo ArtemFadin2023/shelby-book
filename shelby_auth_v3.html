@@ -1,0 +1,485 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap');
+body{background:#0d1f0e;font-family:'Nunito',sans-serif;color:#e0ffe2;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+.wrap{background:#162618;border:2px solid rgba(76,175,80,0.4);border-radius:24px;padding:36px 32px;width:100%;max-width:400px;}
+.logo{font-family:'Fredoka One',cursive;font-size:32px;text-align:center;margin-bottom:28px;color:#e0ffe2;}
+.logo span{color:#FDD835;}
+.tabs{display:flex;background:rgba(255,255,255,.05);border-radius:10px;padding:4px;gap:4px;margin-bottom:24px;}
+.tab{flex:1;padding:9px;border:none;background:transparent;color:rgba(255,255,255,.4);font-family:'Fredoka One',cursive;font-size:14px;border-radius:8px;cursor:pointer;transition:all .2s;}
+.tab.active{background:#2E7D32;color:#fff;}
+.screen{display:none;}
+.screen.active{display:block;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:10px;font-weight:800;color:#81C784;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.field-wrap{position:relative;}
+.field input{width:100%;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.06);border:2px solid rgba(76,175,80,0.22);color:#e0ffe2;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;outline:none;transition:border-color .2s;}
+.field input:focus{border-color:#4CAF50;}
+.field input.ok{border-color:#4CAF50;background:rgba(76,175,80,.07);}
+.field input.err{border-color:#E53935;}
+.field input.has-eye{padding-right:40px;}
+.eye-btn{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;outline:none;box-shadow:none;
+  -webkit-appearance:none;appearance:none;
+  color:rgba(255,255,255,.28);cursor:pointer;padding:0;margin:0;
+  font-size:15px;line-height:1;display:flex;align-items:center;
+  -webkit-tap-highlight-color:transparent;
+}
+.eye-btn:hover{color:rgba(255,255,255,.55);}
+.eye-btn:focus{outline:none;box-shadow:none;}
+.eye-btn:active{outline:none;box-shadow:none;}
+.eye-btn svg{display:block;width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.field-hint{font-size:11px;margin-top:4px;display:flex;align-items:center;gap:5px;min-height:14px;font-weight:700;}
+.hint-ok{color:#81C784;}
+.hint-err{color:#FF7043;}
+.hint-info{color:rgba(255,255,255,.3);}
+.pass-bar{height:3px;border-radius:2px;background:rgba(255,255,255,.1);margin-top:6px;overflow:hidden;}
+.pass-fill{height:100%;border-radius:2px;transition:width .3s,background .3s;width:0;}
+.tips{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;}
+.tip{font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;transition:color .2s;}
+.tip.ok{color:#81C784;}
+.tip.bad{color:rgba(255,255,255,.25);}
+.tip svg{width:12px;height:12px;flex-shrink:0;}
+.btn-main{width:100%;padding:13px;border-radius:10px;background:#2E7D32;border:2px solid #1B5E20;color:#fff;font-family:'Fredoka One',cursive;font-size:17px;cursor:pointer;transition:all .2s;box-shadow:0 4px 0 #1B5E20;margin-top:4px;position:relative;overflow:hidden;}
+.btn-main:hover{transform:translateY(2px);box-shadow:0 2px 0 #1B5E20;}
+.btn-main:active{transform:translateY(4px);box-shadow:none;}
+.btn-main:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:0 4px 0 #1B5E20;}
+.btn-ghost{width:100%;padding:9px;border-radius:9px;background:transparent;border:2px solid rgba(76,175,80,0.22);color:rgba(255,255,255,.4);font-family:'Fredoka One',cursive;font-size:13px;cursor:pointer;transition:all .2s;margin-top:8px;}
+.btn-ghost:hover{border-color:rgba(76,175,80,0.5);color:rgba(255,255,255,.7);}
+.msg{font-size:12px;font-weight:700;margin-top:10px;padding:10px 12px;border-radius:8px;display:none;text-align:center;}
+.msg.err{color:#FF7043;background:rgba(255,112,67,.1);border:1px solid rgba(255,112,67,.3);}
+.msg.ok{color:#81C784;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);}
+.link-btn{background:none;border:none;outline:none;color:rgba(255,255,255,.3);font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;text-decoration:underline;padding:0;transition:color .2s;}
+.link-btn:hover{color:#81C784;}
+.steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:20px;}
+.sdot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:12px;border:2px solid rgba(76,175,80,0.3);color:rgba(255,255,255,.3);transition:all .3s;}
+.sdot.done{background:#4CAF50;border-color:#4CAF50;color:#fff;}
+.sdot.act{background:#2E7D32;border-color:#4CAF50;color:#fff;}
+.sline{width:36px;height:2px;background:rgba(76,175,80,.2);}
+.sline.done{background:#4CAF50;}
+.otp-row{display:flex;gap:8px;justify-content:center;margin:12px 0;}
+.otp-d{width:46px;height:56px;border-radius:10px;background:rgba(255,255,255,.06);border:2px solid rgba(76,175,80,.22);color:#e0ffe2;font-family:'Fredoka One',cursive;font-size:26px;text-align:center;outline:none;transition:border-color .2s,transform .15s;-moz-appearance:textfield;}
+.otp-d::-webkit-outer-spin-button,.otp-d::-webkit-inner-spin-button{-webkit-appearance:none;}
+.otp-d:focus{border-color:#4CAF50;transform:scale(1.05);}
+.otp-d.filled{border-color:#4CAF50;}
+.otp-d.err{border-color:#E53935;}
+.hint-small{font-size:11px;color:rgba(255,255,255,.3);font-weight:700;text-align:center;margin-bottom:10px;}
+.verified-badge{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.35);border-radius:10px;margin-bottom:14px;}
+.vb-title{font-size:12px;font-weight:800;color:#81C784;}
+.vb-email{font-size:11px;color:rgba(255,255,255,.4);}
+.resend-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;font-size:11px;font-weight:700;color:rgba(255,255,255,.35);}
+.resend-btn{background:none;border:none;color:#4CAF50;font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;text-decoration:underline;}
+.resend-btn:disabled{opacity:.35;cursor:not-allowed;text-decoration:none;}
+.modal-overlay{position:fixed;inset:0;background:rgba(5,15,6,0.78);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9000;opacity:0;pointer-events:none;transition:opacity .3s ease;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal-box{background:#162618;border:2px solid rgba(76,175,80,0.45);border-radius:24px;width:100%;max-width:380px;transform:scale(.93) translateY(16px);transition:transform .35s cubic-bezier(.34,1.56,.64,1);overflow:hidden;}
+.modal-overlay.open .modal-box{transform:scale(1) translateY(0);}
+.modal-head{background:linear-gradient(135deg,#1B5E20,#0d2e10);padding:24px 28px 20px;position:relative;}
+.modal-head-logo{font-family:'Fredoka One',cursive;font-size:22px;color:#e0ffe2;margin-bottom:3px;}
+.modal-head-logo span{color:#FDD835;}
+.modal-head-sub{font-size:12px;color:rgba(255,255,255,.45);font-weight:700;}
+.modal-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.1);border:none;outline:none;color:rgba(255,255,255,.6);border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+.modal-close:hover{background:rgba(255,255,255,.2);}
+.modal-body{padding:24px 28px;}
+.user-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2E7D32,#4CAF50);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:22px;color:#fff;margin:0 auto 12px;border:3px solid rgba(76,175,80,.4);}
+.user-name{font-family:'Fredoka One',cursive;font-size:20px;color:#e0ffe2;text-align:center;margin-bottom:2px;}
+.user-role{font-size:11px;color:rgba(255,255,255,.3);font-weight:800;text-transform:uppercase;letter-spacing:.08em;text-align:center;margin-bottom:20px;}
+.book-btn{width:100%;padding:13px;border-radius:11px;font-family:'Fredoka One',cursive;font-size:15px;cursor:pointer;transition:all .2s;margin-bottom:8px;border:2px solid;}
+.book-btn.lecture{background:#229ED9;border-color:#1a7db0;color:#fff;box-shadow:0 4px 0 #1a7db0;}
+.book-btn.lecture:hover{transform:translateY(2px);box-shadow:0 2px 0 #1a7db0;}
+.book-btn.board{background:#2E7D32;border-color:#1B5E20;color:#fff;box-shadow:0 4px 0 #1B5E20;}
+.book-btn.board:hover{transform:translateY(2px);box-shadow:0 2px 0 #1B5E20;}
+.modal-sep{height:1px;background:rgba(76,175,80,.15);margin:16px 0;}
+.logout-btn{width:100%;padding:9px;border-radius:9px;background:transparent;border:2px solid rgba(229,57,53,.25);color:rgba(229,57,53,.6);font-family:'Fredoka One',cursive;font-size:13px;cursor:pointer;transition:all .2s;}
+.logout-btn:hover{background:#E53935;border-color:#E53935;color:#fff;}
+.book-msg{font-size:12px;font-weight:700;text-align:center;padding:8px 12px;border-radius:8px;margin-top:10px;display:none;}
+.book-msg.ok{color:#81C784;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);}
+.trigger-area{text-align:center;margin-top:24px;}
+.trigger-btn{background:rgba(76,175,80,.1);border:2px solid rgba(76,175,80,.3);color:#81C784;font-family:'Fredoka One',cursive;font-size:13px;padding:9px 20px;border-radius:99px;cursor:pointer;transition:all .2s;}
+.trigger-btn:hover{background:rgba(76,175,80,.2);border-color:#4CAF50;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+</style>
+
+<div class="wrap" id="mainWrap">
+  <div class="logo">🦎 shelby<span>-book</span></div>
+
+  <div class="tabs" id="mainTabs">
+    <button class="tab active" id="tabL" onclick="goTab('login')">🔐 Войти</button>
+    <button class="tab" id="tabR" onclick="goTab('reg')">✨ Регистрация</button>
+  </div>
+
+  <div class="screen active" id="scLogin">
+    <div class="field">
+      <label>Логин</label>
+      <input type="text" id="lUser" placeholder="shelby" autocomplete="off" autocapitalize="none"/>
+    </div>
+    <div class="field">
+      <label>Пароль</label>
+      <div class="field-wrap">
+        <input type="password" id="lPass" placeholder="••••••••" class="has-eye" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+        <button class="eye-btn" type="button" onclick="toggleEye('lPass',this)" aria-label="Показать пароль" id="eyeLogin">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <button class="btn-main" onclick="doLogin()">🔐 Войти</button>
+    <div class="msg err" id="loginErr">Неверный логин или пароль</div>
+    <div style="text-align:center;margin-top:14px;">
+      <button class="link-btn" onclick="goForgot()">Забыл пароль?</button>
+    </div>
+  </div>
+
+  <div class="screen" id="scForgot">
+    <button class="btn-ghost" style="margin-bottom:14px;margin-top:0;" onclick="goTab('login')">← Назад</button>
+    <div style="font-family:'Fredoka One',cursive;font-size:19px;margin-bottom:6px;">🔑 Восстановление пароля</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.35);font-weight:700;margin-bottom:18px;line-height:1.6;">Введи email — пришлём код для сброса</div>
+    <div id="forgotStep1">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="fEmail" placeholder="you@mail.com" onkeydown="if(event.key==='Enter')sendForgot()"/>
+      </div>
+      <button class="btn-main" onclick="sendForgot()">📨 Отправить код</button>
+      <div class="msg err" id="forgotErr1"></div>
+    </div>
+    <div id="forgotStep2" style="display:none;">
+      <div class="hint-small" id="fEmailLabel"></div>
+      <div class="otp-row">
+        <input class="otp-d" type="number" id="f0" oninput="fOtp(this,0)" onkeydown="fKey(event,0)">
+        <input class="otp-d" type="number" id="f1" oninput="fOtp(this,1)" onkeydown="fKey(event,1)">
+        <input class="otp-d" type="number" id="f2" oninput="fOtp(this,2)" onkeydown="fKey(event,2)">
+        <input class="otp-d" type="number" id="f3" oninput="fOtp(this,3)" onkeydown="fKey(event,3)">
+        <input class="otp-d" type="number" id="f4" oninput="fOtp(this,4)" onkeydown="fKey(event,4)">
+        <input class="otp-d" type="number" id="f5" oninput="fOtp(this,5)" onkeydown="fKey(event,5)">
+      </div>
+      <div class="field">
+        <label>Новый пароль</label>
+        <div class="field-wrap">
+          <input type="password" id="fNewPass" placeholder="Минимум 6 символов" class="has-eye" oninput="pStrength(this.value,'fBar','fBarLabel')"/>
+          <button class="eye-btn" type="button" onclick="toggleEye('fNewPass',this)" aria-label="Показать пароль">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="pass-bar"><div class="pass-fill" id="fBar"></div></div>
+        <div class="field-hint hint-info" id="fBarLabel"></div>
+      </div>
+      <button class="btn-main" onclick="doForgotReset()">✅ Сбросить пароль</button>
+      <div class="msg err" id="forgotErr2"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="scReg1">
+    <div class="steps">
+      <div class="sdot act">1</div><div class="sline"></div>
+      <div class="sdot">2</div><div class="sline"></div>
+      <div class="sdot">3</div>
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="rEmail" placeholder="you@company.com" autocomplete="email" oninput="clearMsg('rErr1')" onkeydown="if(event.key==='Enter')sendCode()"/>
+    </div>
+    <button class="btn-main" id="btnSend" onclick="sendCode()">📨 Отправить код</button>
+    <div class="msg err" id="rErr1"></div>
+    <div class="msg ok" id="rOk1"></div>
+  </div>
+
+  <div class="screen" id="scReg2">
+    <div class="steps">
+      <div class="sdot done">✓</div><div class="sline done"></div>
+      <div class="sdot act">2</div><div class="sline"></div>
+      <div class="sdot">3</div>
+    </div>
+    <div class="hint-small" id="codeLabel"></div>
+    <div class="otp-row">
+      <input class="otp-d" type="number" id="c0" oninput="cOtp(this,0)" onkeydown="cKey(event,0)">
+      <input class="otp-d" type="number" id="c1" oninput="cOtp(this,1)" onkeydown="cKey(event,1)">
+      <input class="otp-d" type="number" id="c2" oninput="cOtp(this,2)" onkeydown="cKey(event,2)">
+      <input class="otp-d" type="number" id="c3" oninput="cOtp(this,3)" onkeydown="cKey(event,3)">
+      <input class="otp-d" type="number" id="c4" oninput="cOtp(this,4)" onkeydown="cKey(event,4)">
+      <input class="otp-d" type="number" id="c5" oninput="cOtp(this,5)" onkeydown="cKey(event,5)">
+    </div>
+    <button class="btn-main" id="btnVerify" onclick="verifyOTP()">✅ Подтвердить email</button>
+    <div class="msg err" id="rErr2"></div>
+    <div class="resend-row">
+      <span id="resendLabel">Повторно через <b id="resendSec">60</b>с</span>
+      <button class="resend-btn" id="btnResend" disabled onclick="resendCode()">Отправить снова</button>
+    </div>
+    <button class="btn-ghost" onclick="goTab('reg')">← Изменить email</button>
+  </div>
+
+  <div class="screen" id="scReg3">
+    <div class="steps">
+      <div class="sdot done">✓</div><div class="sline done"></div>
+      <div class="sdot done">✓</div><div class="sline done"></div>
+      <div class="sdot act">3</div>
+    </div>
+    <div class="verified-badge">
+      <div style="font-size:18px;">✅</div>
+      <div><div class="vb-title">Email подтверждён!</div><div class="vb-email" id="vEmail"></div></div>
+    </div>
+    <div class="field">
+      <label>Логин</label>
+      <input type="text" id="rUser" placeholder="минимум 3 символа" autocomplete="off" autocapitalize="none" autocorrect="off" oninput="checkUsername(this.value)"/>
+      <div class="field-hint" id="userHint"></div>
+    </div>
+    <div class="field">
+      <label>Пароль</label>
+      <div class="field-wrap">
+        <input type="password" id="rPass" placeholder="Минимум 6 символов" class="has-eye" autocomplete="new-password" oninput="pStrength(this.value,'rBar','rBarLabel');checkTips(this.value)"/>
+        <button class="eye-btn" type="button" onclick="toggleEye('rPass',this)" aria-label="Показать пароль">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="pass-bar"><div class="pass-fill" id="rBar"></div></div>
+      <div class="field-hint hint-info" id="rBarLabel"></div>
+      <div class="tips">
+        <div class="tip bad" id="tp1"><svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>6+ символов</div>
+        <div class="tip bad" id="tp2"><svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>Заглавная буква</div>
+        <div class="tip bad" id="tp3"><svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>Цифра</div>
+        <div class="tip bad" id="tp4"><svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>Спецсимвол</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Повтор пароля</label>
+      <div class="field-wrap">
+        <input type="password" id="rPass2" placeholder="Повтори пароль" class="has-eye" autocomplete="new-password" oninput="checkPass2()" onkeydown="if(event.key==='Enter')doRegister()"/>
+        <button class="eye-btn" type="button" onclick="toggleEye('rPass2',this)" aria-label="Показать пароль">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="field-hint" id="pass2Hint"></div>
+    </div>
+    <button class="btn-main" onclick="doRegister()">🚀 Создать аккаунт</button>
+    <div class="msg err" id="rErr3"></div>
+  </div>
+
+  <div class="trigger-area" id="triggerArea" style="display:none;">
+    <button class="trigger-btn" onclick="openModal()">🦎 Мой аккаунт</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="userModal" onclick="modalBgClick(event)">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-head">
+      <div class="modal-head-logo">🦎 shelby<span>-book</span></div>
+      <div class="modal-head-sub" id="modalSub">Личный кабинет</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="user-avatar" id="modalAvatar">S</div>
+      <div class="user-name" id="modalName">shelby</div>
+      <div class="user-role" id="modalRole">Администратор</div>
+      <button class="book-btn lecture" onclick="bookAction('lecture')">📚 Записаться на лекцию</button>
+      <button class="book-btn board" onclick="bookAction('board')">🏡 Забронировать передержку</button>
+      <div class="modal-sep"></div>
+      <button class="logout-btn" onclick="doLogout()">Выйти из аккаунта →</button>
+      <div class="book-msg ok" id="bookMsg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const EMAIL_SERVER=(typeof localStorage!=='undefined'&&localStorage.getItem('sb_email_server_url'))||'http://localhost:3001';
+let regEmail='',forgotEmail='',resendTimer=null;
+function g(id){return document.getElementById(id);}
+function val(id){return g(id).value.trim();}
+function clearMsg(id){const el=g(id);if(el)el.style.display='none';}
+function showMsg(id,text,type){const el=g(id);if(!el)return;el.textContent=text;el.className='msg '+(type||'err');el.style.display='block';}
+
+const EYE_OPEN=`<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const EYE_OFF=`<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
+function toggleEye(inputId,btn){
+  const inp=g(inputId);
+  if(inp.type==='password'){inp.type='text';btn.innerHTML=EYE_OFF;}
+  else{inp.type='password';btn.innerHTML=EYE_OPEN;}
+}
+
+function shake(){const w=g('mainWrap');w.style.animation='shake .4s ease';setTimeout(()=>w.style.animation='',400);}
+function getCreds(){try{const r=localStorage.getItem('sb_admin_creds');return r?JSON.parse(r):null;}catch(e){return null;}}
+function getUsers(){try{return JSON.parse(localStorage.getItem('sb_users')||'[]');}catch(e){return[];}}
+const DEF={user:'shelby',pass:'agama2026'};
+
+function goTab(t){
+  g('mainTabs').style.display='flex';
+  ['scLogin','scForgot','scReg1','scReg2','scReg3'].forEach(s=>g(s).classList.remove('active'));
+  g('tabL').classList.toggle('active',t==='login');
+  g('tabR').classList.toggle('active',t==='reg');
+  if(t==='login')g('scLogin').classList.add('active');
+  else if(t==='reg')g('scReg1').classList.add('active');
+}
+function goForgot(){
+  g('mainTabs').style.display='none';
+  ['scLogin','scReg1','scReg2','scReg3'].forEach(s=>g(s).classList.remove('active'));
+  g('scForgot').classList.add('active');
+  g('tabL').classList.remove('active');g('tabR').classList.remove('active');
+}
+
+function doLogin(){
+  const u=val('lUser'),p=g('lPass').value;
+  clearMsg('loginErr');
+  const creds=getCreds()||DEF;
+  if(u===creds.user&&p===creds.pass){loginSuccess(u,'Администратор');return;}
+  const found=getUsers().find(usr=>usr.username.toLowerCase()===u.toLowerCase()&&atob(usr.password||'')===p&&usr.verified);
+  if(found){loginSuccess(u,'Пользователь');return;}
+  showMsg('loginErr','Неверный логин или пароль');shake();g('lPass').value='';
+}
+
+function loginSuccess(username,role){
+  try{localStorage.setItem('sb_admin_session','1');}catch(e){}
+  g('modalAvatar').textContent=username[0].toUpperCase();
+  g('modalName').textContent=username;
+  g('modalRole').textContent=role;
+  g('modalSub').textContent=role+' · shelby-book';
+  ['scLogin','scForgot','scReg1','scReg2','scReg3'].forEach(s=>g(s).classList.remove('active'));
+  g('mainTabs').style.display='none';
+  g('triggerArea').style.display='block';
+  openModal();
+}
+
+function openModal(){g('userModal').classList.add('open');clearMsg('bookMsg');}
+function closeModal(){g('userModal').classList.remove('open');}
+function modalBgClick(e){if(e.target===g('userModal'))closeModal();}
+
+function doLogout(){
+  try{localStorage.removeItem('sb_admin_session');}catch(e){}
+  closeModal();
+  g('triggerArea').style.display='none';
+  g('mainTabs').style.display='flex';
+  g('lPass').value='';g('lUser').value='';
+  goTab('login');
+}
+
+function bookAction(type){
+  let tg={};try{tg=JSON.parse(localStorage.getItem('sb_tg')||'{}');}catch(e){}
+  const link=tg.buy?('https://t.me/'+(tg.buy||'').replace('@','')):'https://t.me/just_agamass';
+  showMsg('bookMsg',type==='lecture'?'📚 Переходим в Telegram...':'🏡 Переходим в Telegram...','ok');
+  setTimeout(()=>window.open(link,'_blank'),500);
+}
+
+function pStrength(v,barId,labelId){
+  let s=0;
+  if(v.length>=6)s++;if(v.length>=10)s++;
+  if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+  const lvs=[{p:'20%',c:'#E53935',t:'Очень слабый'},{p:'40%',c:'#FF7043',t:'Слабый'},{p:'60%',c:'#FDD835',t:'Средний'},{p:'80%',c:'#8BC34A',t:'Хороший'},{p:'100%',c:'#4CAF50',t:'Отличный'}];
+  const lv=lvs[Math.max(0,s-1)];
+  const fill=g(barId),label=g(labelId);
+  if(fill){fill.style.width=v?lv.p:'0';fill.style.background=lv.c;}
+  if(label){label.textContent=v?lv.t:'';label.style.color=lv.c;}
+}
+
+function checkTips(v){
+  const svgOk='<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3.5 6l1.8 1.8L8.5 4.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const svgBad='<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
+  [{id:'tp1',ok:v.length>=6,t:'6+ символов'},{id:'tp2',ok:/[A-Z]/.test(v),t:'Заглавная буква'},{id:'tp3',ok:/[0-9]/.test(v),t:'Цифра'},{id:'tp4',ok:/[^A-Za-z0-9]/.test(v),t:'Спецсимвол'}].forEach(t=>{
+    const el=g(t.id);if(!el)return;el.className='tip '+(t.ok?'ok':'bad');el.innerHTML=(t.ok?svgOk:svgBad)+t.t;
+  });
+}
+
+let uTimer=null;
+function okSvg(){return'<svg width="12" height="12" viewBox="0 0 12 12" style="flex-shrink:0"><circle cx="6" cy="6" r="5" fill="none" stroke="#81C784" stroke-width="1.5"/><path d="M3.5 6l1.8 1.8L8.5 4.5" stroke="#81C784" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';}
+function xSvg(){return'<svg width="12" height="12" viewBox="0 0 12 12" style="flex-shrink:0"><circle cx="6" cy="6" r="5" fill="none" stroke="#FF7043" stroke-width="1.5"/><line x1="4" y1="4" x2="8" y2="8" stroke="#FF7043" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="4" x2="4" y2="8" stroke="#FF7043" stroke-width="1.5" stroke-linecap="round"/></svg>';}
+
+function checkUsername(v){
+  const hint=g('userHint'),inp=g('rUser');
+  clearTimeout(uTimer);
+  if(!v){hint.innerHTML='';inp.className='';return;}
+  if(v.length<3){hint.innerHTML=xSvg()+'Минимум 3 символа';hint.className='field-hint hint-err';inp.className='err';return;}
+  hint.innerHTML='⏳ Проверяем...';hint.className='field-hint hint-info';
+  uTimer=setTimeout(()=>{
+    const creds=getCreds()||DEF;
+    const taken=getUsers().some(u=>u.username.toLowerCase()===v.toLowerCase())||v.toLowerCase()===creds.user.toLowerCase();
+    if(taken){hint.innerHTML=xSvg()+'Логин уже занят';hint.className='field-hint hint-err';inp.className='err';}
+    else{hint.innerHTML=okSvg()+'Логин свободен';hint.className='field-hint hint-ok';inp.className='ok';}
+  },450);
+}
+
+function checkPass2(){
+  const p1=g('rPass').value,p2=g('rPass2').value,hint=g('pass2Hint');
+  if(!p2){hint.innerHTML='';g('rPass2').className='has-eye';return;}
+  if(p1===p2){hint.innerHTML=okSvg()+'Пароли совпадают';hint.className='field-hint hint-ok';g('rPass2').className='has-eye ok';}
+  else{hint.innerHTML=xSvg()+'Пароли не совпадают';hint.className='field-hint hint-err';g('rPass2').className='has-eye err';}
+}
+
+function clearOTP(p){for(let i=0;i<6;i++){const el=g(p+i);if(el){el.value='';el.className='otp-d';}}}
+function getOTP(p){let s='';for(let i=0;i<6;i++){const el=g(p+i);s+=el?el.value:'';}return s;}
+function cOtp(el,i){el.value=el.value.replace(/\D/g,'').slice(-1);el.classList.toggle('filled',el.value!=='');if(el.value&&i<5)g('c'+(i+1)).focus();if(getOTP('c').length===6)setTimeout(verifyOTP,150);}
+function cKey(e,i){if(e.key==='Backspace'&&!g('c'+i).value&&i>0)g('c'+(i-1)).focus();}
+function fOtp(el,i){el.value=el.value.replace(/\D/g,'').slice(-1);el.classList.toggle('filled',el.value!=='');if(el.value&&i<5)g('f'+(i+1)).focus();}
+function fKey(e,i){if(e.key==='Backspace'&&!g('f'+i).value&&i>0)g('f'+(i-1)).focus();}
+
+function startResend(){
+  let s=60;g('btnResend').disabled=true;g('resendLabel').style.display='';
+  clearInterval(resendTimer);
+  resendTimer=setInterval(()=>{s--;g('resendSec').textContent=s;if(s<=0){clearInterval(resendTimer);g('btnResend').disabled=false;g('resendLabel').style.display='none';}},1000);
+}
+async function resendCode(){
+  g('btnResend').disabled=true;
+  try{await fetch(EMAIL_SERVER+'/api/send-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:regEmail})});clearOTP('c');startResend();}catch(e){}
+}
+async function sendCode(){
+  const email=val('rEmail');clearMsg('rErr1');clearMsg('rOk1');
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showMsg('rErr1','Введи корректный email');return;}
+  const btn=g('btnSend');btn.disabled=true;btn.textContent='Отправляем...';
+  try{
+    const r=await fetch(EMAIL_SERVER+'/api/send-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    const d=await r.json();
+    if(!d.ok){showMsg('rErr1',d.error||'Ошибка');btn.disabled=false;btn.textContent='📨 Отправить код';return;}
+    regEmail=email;showMsg('rOk1','✅ Код отправлен!','ok');
+    setTimeout(()=>{g('codeLabel').textContent='Код отправлен на '+email;clearOTP('c');g('scReg1').classList.remove('active');g('scReg2').classList.add('active');startResend();},600);
+  }catch(e){showMsg('rErr1','Сервер недоступен');btn.disabled=false;btn.textContent='📨 Отправить код';}
+}
+async function verifyOTP(){
+  const code=getOTP('c');if(code.length<6){showMsg('rErr2','Введи все 6 цифр');return;}
+  const btn=g('btnVerify');btn.disabled=true;btn.textContent='Проверяем...';
+  try{
+    const r=await fetch(EMAIL_SERVER+'/api/verify-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:regEmail,code})});
+    const d=await r.json();
+    if(!d.ok){for(let i=0;i<6;i++)g('c'+i).classList.add('err');shake();showMsg('rErr2',d.error||'Неверный код');btn.disabled=false;btn.textContent='✅ Подтвердить email';return;}
+    g('vEmail').textContent=regEmail;g('scReg2').classList.remove('active');g('scReg3').classList.add('active');
+  }catch(e){showMsg('rErr2','Ошибка сервера');btn.disabled=false;btn.textContent='✅ Подтвердить email';}
+}
+function doRegister(){
+  const u=val('rUser'),p=g('rPass').value,p2=g('rPass2').value;clearMsg('rErr3');
+  if(u.length<3){showMsg('rErr3','Логин минимум 3 символа');return;}
+  if(p.length<6){showMsg('rErr3','Пароль минимум 6 символов');return;}
+  if(p!==p2){showMsg('rErr3','Пароли не совпадают');return;}
+  const creds=getCreds()||DEF;
+  if(getUsers().some(u2=>u2.username.toLowerCase()===u.toLowerCase())||u.toLowerCase()===creds.user.toLowerCase()){showMsg('rErr3','Логин уже занят');return;}
+  const users=getUsers();
+  users.push({id:Date.now(),username:u,email:regEmail,password:btoa(p),role:'user',verified:true,createdAt:new Date().toLocaleDateString('ru')});
+  try{localStorage.setItem('sb_users',JSON.stringify(users));}catch(e){}
+  loginSuccess(u,'Пользователь');
+}
+async function sendForgot(){
+  const email=val('fEmail');clearMsg('forgotErr1');
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showMsg('forgotErr1','Введи корректный email');return;}
+  const btn=document.querySelector('#forgotStep1 .btn-main');btn.disabled=true;btn.textContent='Отправляем...';
+  try{
+    const r=await fetch(EMAIL_SERVER+'/api/send-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    const d=await r.json();
+    if(!d.ok){showMsg('forgotErr1',d.error||'Ошибка');btn.disabled=false;btn.textContent='📨 Отправить код';return;}
+    forgotEmail=email;g('fEmailLabel').textContent='Код отправлен на '+email;
+    g('forgotStep1').style.display='none';g('forgotStep2').style.display='block';clearOTP('f');
+  }catch(e){showMsg('forgotErr1','Сервер недоступен');btn.disabled=false;btn.textContent='📨 Отправить код';}
+}
+async function doForgotReset(){
+  const code=getOTP('f'),np=g('fNewPass').value;clearMsg('forgotErr2');
+  if(code.length<6){showMsg('forgotErr2','Введи код из письма');return;}
+  if(np.length<6){showMsg('forgotErr2','Пароль минимум 6 символов');return;}
+  try{
+    const r=await fetch(EMAIL_SERVER+'/api/verify-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:forgotEmail,code})});
+    const d=await r.json();
+    if(!d.ok){for(let i=0;i<6;i++)g('f'+i).classList.add('err');showMsg('forgotErr2',d.error||'Неверный код');return;}
+    const users=getUsers(),creds=getCreds()||DEF;
+    if(users.some(u=>u.email===forgotEmail)){users.forEach(u=>{if(u.email===forgotEmail)u.password=btoa(np);});try{localStorage.setItem('sb_users',JSON.stringify(users));}catch(e){}}
+    else{try{localStorage.setItem('sb_admin_creds',JSON.stringify({user:creds.user,pass:np}));}catch(e){}}
+    showMsg('forgotErr2','✅ Пароль изменён!','ok');
+    setTimeout(()=>{g('forgotStep1').style.display='block';g('forgotStep2').style.display='none';g('fEmail').value='';goTab('login');},1800);
+  }catch(e){showMsg('forgotErr2','Ошибка сервера');}
+}
+(function init(){
+  try{if(localStorage.getItem('sb_admin_session')==='1'){const creds=getCreds()||DEF;loginSuccess(creds.user,'Администратор');}}catch(e){}
+})();
+</script>
