@@ -244,6 +244,92 @@
     @media (max-width:600px) {
       #fontPickerPanel { width:100vw; }
     }
+
+    /* Auth overlays */
+    #sbAuthOverlay {
+      position: fixed; inset: 0; z-index: 95000;
+      background: rgba(5,15,6,0.78);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none; transition: opacity .3s ease;
+    }
+    #sbAuthOverlay.open { opacity: 1; pointer-events: auto; }
+    #sbAuthOverlay .wrap { background:#162618;border:2px solid rgba(76,175,80,0.4);border-radius:24px;padding:36px 32px;width:100%;max-width:420px;max-height:90vh;overflow:auto; }
+    #sbAuthOverlay .logo{font-family:'Fredoka One',cursive;font-size:32px;text-align:center;margin-bottom:28px;color:#e0ffe2;}
+    #sbAuthOverlay .logo span{color:#FDD835;}
+    #sbAuthOverlay .tabs{display:flex;background:rgba(255,255,255,.05);border-radius:10px;padding:4px;gap:4px;margin-bottom:24px;}
+    #sbAuthOverlay .tab{flex:1;padding:9px;border:none;background:transparent;color:rgba(255,255,255,.4);font-family:'Fredoka One',cursive;font-size:14px;border-radius:8px;cursor:pointer;transition:all .2s;}
+    #sbAuthOverlay .tab.active{background:#2E7D32;color:#fff;}
+    #sbAuthOverlay .screen{display:none;}
+    #sbAuthOverlay .screen.active{display:block;}
+    #sbAuthOverlay .field{margin-bottom:14px;}
+    #sbAuthOverlay .field label{display:block;font-size:10px;font-weight:800;color:#81C784;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+    #sbAuthOverlay .field-wrap{position:relative;}
+    #sbAuthOverlay .field input{width:100%;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.06);border:2px solid rgba(76,175,80,.22);color:#e0ffe2;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;outline:none;transition:border-color .2s;}
+    #sbAuthOverlay .field input:focus{border-color:#4CAF50;}
+    #sbAuthOverlay .field input.ok{border-color:#4CAF50;background:rgba(76,175,80,.07);}
+    #sbAuthOverlay .field input.err{border-color:#E53935;}
+    #sbAuthOverlay .field input.has-eye{padding-right:40px;}
+    #sbAuthOverlay .eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.28);cursor:pointer;padding:0;margin:0;font-size:15px;line-height:1;display:flex;align-items:center;}
+    #sbAuthOverlay .eye-btn svg{display:block;width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+    #sbAuthOverlay .field-hint{font-size:11px;margin-top:4px;display:flex;align-items:center;gap:5px;min-height:14px;font-weight:700;}
+    #sbAuthOverlay .hint-ok{color:#81C784;}
+    #sbAuthOverlay .hint-err{color:#FF7043;}
+    #sbAuthOverlay .hint-info{color:rgba(255,255,255,.3);}
+    #sbAuthOverlay .pass-bar{height:3px;border-radius:2px;background:rgba(255,255,255,.1);margin-top:6px;overflow:hidden;}
+    #sbAuthOverlay .pass-fill{height:100%;border-radius:2px;transition:width .3s,background .3s;width:0;}
+    #sbAuthOverlay .tips{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;}
+    #sbAuthOverlay .tip{font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;transition:color .2s;}
+    #sbAuthOverlay .tip.ok{color:#81C784;}
+    #sbAuthOverlay .tip.bad{color:rgba(255,255,255,.25);}
+    #sbAuthOverlay .tip svg{width:12px;height:12px;flex-shrink:0;}
+    #sbAuthOverlay .btn-main{width:100%;padding:13px;border-radius:10px;background:#2E7D32;border:2px solid #1B5E20;color:#fff;font-family:'Fredoka One',cursive;font-size:17px;cursor:pointer;transition:all .2s;box-shadow:0 4px 0 #1B5E20;margin-top:4px;}
+    #sbAuthOverlay .btn-main:hover{transform:translateY(2px);box-shadow:0 2px 0 #1B5E20;}
+    #sbAuthOverlay .btn-main:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:0 4px 0 #1B5E20;}
+    #sbAuthOverlay .btn-ghost{width:100%;padding:9px;border-radius:9px;background:transparent;border:2px solid rgba(76,175,80,0.22);color:rgba(255,255,255,.4);font-family:'Fredoka One',cursive;font-size:13px;cursor:pointer;transition:all .2s;margin-top:8px;}
+    #sbAuthOverlay .msg{font-size:12px;font-weight:700;margin-top:10px;padding:10px 12px;border-radius:8px;display:none;text-align:center;}
+    #sbAuthOverlay .msg.err{color:#FF7043;background:rgba(255,112,67,.1);border:1px solid rgba(255,112,67,.3);}
+    #sbAuthOverlay .msg.ok{color:#81C784;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);}
+    #sbAuthOverlay .link-btn{background:none;border:none;color:rgba(255,255,255,.3);font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;text-decoration:underline;padding:0;}
+    #sbAuthOverlay .steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:20px;}
+    #sbAuthOverlay .sdot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:12px;border:2px solid rgba(76,175,80,.3);color:rgba(255,255,255,.3);}
+    #sbAuthOverlay .sdot.done{background:#4CAF50;border-color:#4CAF50;color:#fff;}
+    #sbAuthOverlay .sdot.act{background:#2E7D32;border-color:#4CAF50;color:#fff;}
+    #sbAuthOverlay .sline{width:36px;height:2px;background:rgba(76,175,80,.2);}
+    #sbAuthOverlay .sline.done{background:#4CAF50;}
+    #sbAuthOverlay .otp-row{display:flex;gap:8px;justify-content:center;margin:12px 0;}
+    #sbAuthOverlay .otp-d{width:46px;height:56px;border-radius:10px;background:rgba(255,255,255,.06);border:2px solid rgba(76,175,80,.22);color:#e0ffe2;font-family:'Fredoka One',cursive;font-size:26px;text-align:center;outline:none;}
+    #sbAuthOverlay .otp-d.filled{border-color:#4CAF50;}
+    #sbAuthOverlay .otp-d.err{border-color:#E53935;}
+    #sbAuthOverlay .hint-small{font-size:11px;color:rgba(255,255,255,.3);font-weight:700;text-align:center;margin-bottom:10px;}
+    #sbAuthOverlay .verified-badge{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.35);border-radius:10px;margin-bottom:14px;}
+    #sbAuthOverlay .vb-title{font-size:12px;font-weight:800;color:#81C784;}
+    #sbAuthOverlay .vb-email{font-size:11px;color:rgba(255,255,255,.4);}
+    #sbAuthOverlay .resend-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;font-size:11px;font-weight:700;color:rgba(255,255,255,.35);}
+    #sbAuthOverlay .resend-btn{background:none;border:none;color:#4CAF50;font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;text-decoration:underline;}
+    #sbAuthOverlay .resend-btn:disabled{opacity:.35;cursor:not-allowed;text-decoration:none;}
+    .sb-auth-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:16px;}
+
+    #userModal { position:fixed;inset:0;background:rgba(5,15,6,0.78);display:flex;align-items:center;justify-content:center;padding:20px;z-index:95001;opacity:0;pointer-events:none;transition:opacity .3s ease; }
+    #userModal.open { opacity:1;pointer-events:all; }
+    #userModal .modal-box{background:#162618;border:2px solid rgba(76,175,80,0.45);border-radius:24px;width:100%;max-width:380px;transform:scale(.93) translateY(16px);transition:transform .35s cubic-bezier(.34,1.56,.64,1);overflow:hidden;}
+    #userModal.open .modal-box{transform:scale(1) translateY(0);}
+    #userModal .modal-head{background:linear-gradient(135deg,#1B5E20,#0d2e10);padding:24px 28px 20px;position:relative;}
+    #userModal .modal-head-logo{font-family:'Fredoka One',cursive;font-size:22px;color:#e0ffe2;margin-bottom:3px;}
+    #userModal .modal-head-logo span{color:#FDD835;}
+    #userModal .modal-head-sub{font-size:12px;color:rgba(255,255,255,.45);font-weight:700;}
+    #userModal .modal-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.6);border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    #userModal .modal-body{padding:24px 28px;}
+    #userModal .user-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2E7D32,#4CAF50);display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:22px;color:#fff;margin:0 auto 12px;border:3px solid rgba(76,175,80,.4);}
+    #userModal .user-name{font-family:'Fredoka One',cursive;font-size:20px;color:#e0ffe2;text-align:center;margin-bottom:2px;}
+    #userModal .user-role{font-size:11px;color:rgba(255,255,255,.3);font-weight:800;text-transform:uppercase;letter-spacing:.08em;text-align:center;margin-bottom:20px;}
+    #userModal .book-btn{width:100%;padding:13px;border-radius:11px;font-family:'Fredoka One',cursive;font-size:15px;cursor:pointer;transition:all .2s;margin-bottom:8px;border:2px solid;}
+    #userModal .book-btn.lecture{background:#229ED9;border-color:#1a7db0;color:#fff;box-shadow:0 4px 0 #1a7db0;}
+    #userModal .book-btn.board{background:#2E7D32;border-color:#1B5E20;color:#fff;box-shadow:0 4px 0 #1B5E20;}
+    #userModal .modal-sep{height:1px;background:rgba(76,175,80,.15);margin:16px 0;}
+    #userModal .logout-btn{width:100%;padding:9px;border-radius:9px;background:transparent;border:2px solid rgba(229,57,53,.25);color:rgba(229,57,53,.6);font-family:'Fredoka One',cursive;font-size:13px;cursor:pointer;}
+    #userModal .book-msg{font-size:12px;font-weight:700;text-align:center;padding:8px 12px;border-radius:8px;margin-top:10px;display:none;}
+    #userModal .book-msg.ok{color:#81C784;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);}
   </style>
 </head>
 <body>
@@ -322,6 +408,7 @@
     <li><a href="#ifiles">Файлы</a></li>
   </ul>
   <div class="nav-actions">
+    <button class="nav-btn" id="authNavBtn" onclick="handleAuthButtonClick()">?? ?????</button>
     <button class="nav-btn nav-btn-coloring" onclick="openColoringModal()">🎨 Раскраска</button>
     <a id="navTgLink" href="https://t.me/justshelby" target="_blank" class="nav-btn nav-btn-tg">✈️ ТГ Канал</a>
   </div>
@@ -340,7 +427,15 @@
   <a href="#facts" onclick="toggleMobileMenu()">⚡ Факты</a>
   <a href="#services" onclick="toggleMobileMenu()">🌟 Услуги</a>
   <a href="#ifiles" onclick="toggleMobileMenu()">📁 Файлы</a>
+  <a href="#" onclick="toggleMobileMenu();handleAuthButtonClick();return false;" id="mobileAuthBtn">?? ?????</a>
   <a href="https://t.me/justshelby" target="_blank" id="mobileNavTg">✈️ ТГ Канал</a>
+</div>
+
+<div id="authFrameModal" style="position:fixed;inset:0;background:rgba(5,15,6,.78);z-index:96000;display:none;align-items:center;justify-content:center;padding:20px;" onclick="onAuthFrameBackdrop(event)">
+  <div style="position:relative;width:min(100%,460px);height:min(90vh,900px);background:#162618;border:2px solid rgba(76,175,80,.4);border-radius:24px;overflow:hidden;">
+    <button onclick="closeAuthFrameModal()" style="position:absolute;top:10px;right:10px;z-index:2;border:none;background:rgba(0,0,0,.35);color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;">✕</button>
+    <iframe src="shelby_auth_v3.html" title="Auth" style="width:100%;height:100%;border:0;background:#0d1f0e;"></iframe>
+  </div>
 </div>
 
 <!-- ═══ COLORING MODAL ═══ -->
@@ -383,6 +478,7 @@
 
 <!-- ═══ FAB ═══ -->
 <div class="fab-group" id="fabGroup">
+  <button class="fab-btn" id="fabAuthBtn" onclick="handleAuthButtonClick()"><span>??</span> ?????</button>
   <a id="fabTgLink" href="https://t.me/justshelby" target="_blank" class="fab-btn fab-tg"><span>✈️</span> ТГ Канал</a>
   <button class="fab-btn fab-coloring" onclick="openColoringModal()"><span>🎨</span> Раскраска</button>
 </div>
@@ -1818,6 +1914,23 @@ document.addEventListener('copy', e => {
   if (!isEditMode) { e.clipboardData.setData('text/plain','© shelby-book'); e.preventDefault(); }
 });
 
+function handleAuthButtonClick() {
+  const m = document.getElementById('authFrameModal');
+  if (!m) return;
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeAuthFrameModal() {
+  const m = document.getElementById('authFrameModal');
+  if (!m) return;
+  m.style.display = 'none';
+  const coloringOpen = document.getElementById('coloringModal')?.classList.contains('active');
+  document.body.style.overflow = coloringOpen ? 'hidden' : '';
+}
+function onAuthFrameBackdrop(e) {
+  if (e.target && e.target.id === 'authFrameModal') closeAuthFrameModal();
+}
+
 /* ═══ MODAL ═══ */
 function openColoringModal() {
   document.getElementById('coloringModal').classList.add('active');
@@ -1825,7 +1938,8 @@ function openColoringModal() {
 }
 function closeColoringModal() {
   document.getElementById('coloringModal').classList.remove('active');
-  document.body.style.overflow = '';
+  const authOpen = document.getElementById('authFrameModal')?.style.display === 'flex';
+  document.body.style.overflow = authOpen ? 'hidden' : '';
 }
 function selectColoring(el) {
   document.querySelectorAll('.coloring-thumb').forEach(t => t.classList.remove('selected'));
